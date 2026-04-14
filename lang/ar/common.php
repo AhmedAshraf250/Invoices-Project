@@ -1,0 +1,66 @@
+<?php
+
+return [
+    'app_name' => 'برنامج الفواتير',
+
+    'language' => [
+        'english' => 'English',
+        'arabic' => 'العربية',
+    ],
+
+    'user' => [
+        'guest' => 'زائر',
+        'premium_member' => 'عضو مميز',
+    ],
+
+    'header' => [
+        'search_anything' => 'ابحث عن أي شيء...',
+        'search' => 'بحث',
+        'messages' => 'الرسائل',
+        'mark_all_read' => 'تحديد الكل كمقروء',
+        'unread_messages' => 'لديك :count رسائل غير مقروءة',
+        'view_all' => 'عرض الكل',
+        'notifications' => 'الإشعارات',
+        'unread_notifications' => 'لديك :count إشعارات غير مقروءة',
+        'profile' => 'الملف الشخصي',
+        'edit_profile' => 'تعديل الملف الشخصي',
+        'inbox' => 'البريد الوارد',
+        'account_settings' => 'إعدادات الحساب',
+        'message_preview_1' => 'أنا آسف لكن لست متأكدًا كيف أساعدك في ذلك...',
+        'message_preview_2' => 'تم كل شيء! والآن حان الوقت للوصول إليك...',
+        'message_preview_3' => 'هل أنت مستعد لاستلام طلبك؟',
+        'message_preview_4' => 'إليك بعض المنتجات...',
+        'message_preview_5' => 'أنا آسف لكن لست متأكدًا كيف...',
+        'notification_new_files' => 'ملفات جديدة متاحة',
+        'notification_updates_available' => 'تحديثات متاحة',
+        'notification_new_order' => 'تم استلام طلب جديد',
+        'notification_new_review' => 'تم استلام تقييم جديد',
+        'notification_verified_registrations' => '22 تسجيلًا موثقًا',
+        'notification_project_approved' => 'تمت الموافقة على المشروع',
+        'time_10_hours_ago' => 'منذ 10 ساعات',
+        'time_2_days_ago' => 'منذ يومين',
+        'time_1_hour_ago' => 'منذ ساعة',
+        'time_1_day_ago' => 'منذ يوم',
+        'time_2_hours_ago' => 'منذ ساعتين',
+        'time_4_hours_ago' => 'منذ 4 ساعات',
+    ],
+
+    'sidebar' => [
+        'app' => 'برنامج الفواتير',
+        'home' => 'الرئيسية',
+        'invoices' => 'الفواتير',
+        'invoices_list' => 'قائمة الفواتير',
+        'paid_invoices' => 'الفواتير المدفوعة',
+        'partial_invoices' => 'الفواتير المدفوعة جزئياً',
+        'unpaid_invoices' => 'الفواتير غير المدفوعة',
+        'reports' => 'التقارير',
+        'invoice_reports' => 'تقارير الفواتير',
+        'customer_reports' => 'تقارير العملاء',
+        'users' => 'المستخدمين',
+        'users_list' => 'قائمة المستخدمين',
+        'users_permissions' => 'صلاحيات المستخدمين',
+        'settings' => 'الإعدادات',
+        'add_section' => 'إضافة قسم',
+        'add_product' => 'إضافة منتج',
+    ],
+];

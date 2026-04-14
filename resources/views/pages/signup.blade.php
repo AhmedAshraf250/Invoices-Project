@@ -22,7 +22,7 @@
 							<div class="row">
 								<div class="col-md-10 col-lg-10 col-xl-9 mx-auto">
 									<div class="card-sigin">
-										<div class="mb-5 d-flex"> <a href="{{ url('/' . $page='index') }}"><img src="{{URL::asset('assets/img/brand/favicon.png')}}" class="sign-favicon ht-40" alt="logo"></a><h1 class="main-logo1 ml-1 mr-0 my-auto tx-28">Va<span>le</span>x</h1></div>
+										<div class="mb-5 d-flex"> <a href="{{ route('page.show', ['page' => 'index']) }}"><img src="{{URL::asset('assets/img/brand/favicon.png')}}" class="sign-favicon ht-40" alt="logo"></a><h1 class="main-logo1 ml-1 mr-0 my-auto tx-28">Va<span>le</span>x</h1></div>
 										<div class="main-signup-header">
 											<h2 class="text-primary">Get Started</h2>
 											<h5 class="font-weight-normal mb-4">It's free to signup and only takes a minute.</h5>
@@ -46,7 +46,7 @@
 												</div>
 											</form>
 											<div class="main-signup-footer mt-5">
-												<p>Already have an account? <a href="{{ url('/' . $page='signin') }}">Sign In</a></p>
+												<p>Already have an account? <a href="{{ route('page.show', ['page' => 'signin']) }}">Sign In</a></p>
 											</div>
 										</div>
 									</div>

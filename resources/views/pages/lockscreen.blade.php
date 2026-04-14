@@ -21,7 +21,7 @@
 						<div class="container p-0">
 							<div class="row">
 								<div class="col-md-10 col-lg-10 col-xl-9 mx-auto">
-									<div class="mb-5 d-flex mx-auto"> <a href="{{ url('/' . $page='index') }}" class="mx-auto d-flex"><img src="{{URL::asset('assets/img/brand/favicon.png')}}" class="sign-favicon ht-40 mx-auto" alt="logo"><h1 class="main-logo1 ml-1 mr-0 my-auto tx-28 text-dark ml-2">Va<span>le</span>x</h1></a></div>
+									<div class="mb-5 d-flex mx-auto"> <a href="{{ route('page.show', ['page' => 'index']) }}" class="mx-auto d-flex"><img src="{{URL::asset('assets/img/brand/favicon.png')}}" class="sign-favicon ht-40 mx-auto" alt="logo"><h1 class="main-logo1 ml-1 mr-0 my-auto tx-28 text-dark ml-2">Va<span>le</span>x</h1></a></div>
 									<div class="main-card-signin d-md-flex bg-white">
 										<div class="p-4 wd-100p">
 											<div class="main-signin-header">

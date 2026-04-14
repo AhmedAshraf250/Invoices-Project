@@ -1,0 +1,66 @@
+<?php
+
+return [
+    'app_name' => 'Invoices Program',
+
+    'language' => [
+        'english' => 'English',
+        'arabic' => 'Arabic',
+    ],
+
+    'user' => [
+        'guest' => 'Guest',
+        'premium_member' => 'Premium Member',
+    ],
+
+    'header' => [
+        'search_anything' => 'Search for anything...',
+        'search' => 'Search',
+        'messages' => 'Messages',
+        'mark_all_read' => 'Mark All Read',
+        'unread_messages' => 'You have :count unread messages',
+        'view_all' => 'View All',
+        'notifications' => 'Notifications',
+        'unread_notifications' => 'You have :count unread notifications',
+        'profile' => 'Profile',
+        'edit_profile' => 'Edit Profile',
+        'inbox' => 'Inbox',
+        'account_settings' => 'Account Settings',
+        'message_preview_1' => "I'm sorry but i'm not sure how to help you with that......",
+        'message_preview_2' => 'All set! Now, time to get to you now......',
+        'message_preview_3' => 'Are you ready to pickup your Delivery...',
+        'message_preview_4' => 'Here are some products ...',
+        'message_preview_5' => "I'm sorry but i'm not sure how...",
+        'notification_new_files' => 'New files available',
+        'notification_updates_available' => 'Updates Available',
+        'notification_new_order' => 'New Order Received',
+        'notification_new_review' => 'New review received',
+        'notification_verified_registrations' => '22 verified registrations',
+        'notification_project_approved' => 'Project has been approved',
+        'time_10_hours_ago' => '10 hours ago',
+        'time_2_days_ago' => '2 days ago',
+        'time_1_hour_ago' => '1 hour ago',
+        'time_1_day_ago' => '1 day ago',
+        'time_2_hours_ago' => '2 hours ago',
+        'time_4_hours_ago' => '4 hours ago',
+    ],
+
+    'sidebar' => [
+        'app' => 'Invoices Program',
+        'home' => 'Home',
+        'invoices' => 'Invoices',
+        'invoices_list' => 'Invoices List',
+        'paid_invoices' => 'Paid Invoices',
+        'partial_invoices' => 'Partially Paid Invoices',
+        'unpaid_invoices' => 'Unpaid Invoices',
+        'reports' => 'Reports',
+        'invoice_reports' => 'Invoice Reports',
+        'customer_reports' => 'Customer Reports',
+        'users' => 'Users',
+        'users_list' => 'Users List',
+        'users_permissions' => 'Users Permissions',
+        'settings' => 'Settings',
+        'add_section' => 'Add Section',
+        'add_product' => 'Add Product',
+    ],
+];
