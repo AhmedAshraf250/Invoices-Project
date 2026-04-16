@@ -60,7 +60,7 @@ return [
         'users_list' => 'Users List',
         'users_permissions' => 'Users Permissions',
         'settings' => 'Settings',
-        'add_section' => 'Add Section',
-        'add_product' => 'Add Product',
+        'organizations' => 'Organizations',
+        'products' => 'Products',
     ],
 ];

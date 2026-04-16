@@ -60,7 +60,7 @@ return [
         'users_list' => 'قائمة المستخدمين',
         'users_permissions' => 'صلاحيات المستخدمين',
         'settings' => 'الإعدادات',
-        'add_section' => 'إضافة قسم',
-        'add_product' => 'إضافة منتج',
+        'organizations' => 'المنظمات',
+        'products' => 'المنتجات',
     ],
 ];

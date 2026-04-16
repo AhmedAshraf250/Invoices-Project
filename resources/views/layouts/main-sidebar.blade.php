@@ -11,14 +11,7 @@
     <div class="main-sidebar-header active">
         <a class="desktop-logo logo-light active" href="{{ route('page.show', ['page' => 'home']) }}"><img
                 src="{{ URL::asset('assets/img/brand/logo.png') }}" class="main-logo" alt="logo"></a>
-        {{-- <a class="desktop-logo logo-dark active" href="{{ route('home') }}"><img
-                src="{{ URL::asset('assets/img/brand/logo-white.png') }}" class="main-logo dark-theme"
-                alt="logo"></a>
-        <a class="logo-icon mobile-logo icon-light active" href="{{ route('home') }}"><img
-                src="{{ URL::asset('assets/img/brand/favicon.png') }}" class="logo-icon" alt="logo"></a>
-        <a class="logo-icon mobile-logo icon-dark active" href="{{ route('home') }}"><img
-                src="{{ URL::asset('assets/img/brand/favicon-white.png') }}" class="logo-icon dark-theme"
-                alt="logo"></a> --}}
+
     </div>
     <div class="main-sidemenu">
         <div class="app-sidebar__user clearfix">
@@ -61,7 +54,7 @@
                         class="angle fe fe-chevron-down"></i></a>
                 <ul class="slide-menu">
                     <li><a class="slide-item"
-                            href="{{ route('page.show', ['page' => 'chart-morris']) }}">{{ __('common.sidebar.invoices_list') }}</a>
+                            href="{{ route('invoices.index') }}">{{ __('common.sidebar.invoices_list') }}</a>
                     </li>
                     <li><a class="slide-item"
                             href="{{ route('page.show', ['page' => 'chart-flot']) }}">{{ __('common.sidebar.paid_invoices') }}</a>
@@ -119,8 +112,8 @@
             <li class="side-item side-item-category">{{ __('common.sidebar.settings') }}</li>
 
             <li class="slide">
-                <a class="side-menu__item" data-toggle="slide" href="#"><svg
-                        xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
+                <a class="side-menu__item" data-toggle="slide" href="#"><svg xmlns="http://www.w3.org/2000/svg"
+                        class="side-menu__icon" viewBox="0 0 24 24">
                         <path d="M0 0h24v24H0V0z" fill="none" />
                         <path d="M6 20h12V10H6v10zm6-7c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" opacity=".3" />
                         <path
@@ -129,10 +122,10 @@
                         class="angle fe fe-chevron-down"></i></a>
                 <ul class="slide-menu">
                     <li><a class="slide-item"
-                            href="{{ route('page.show', ['page' => 'signin']) }}">{{ __('common.sidebar.add_section') }}</a>
+                            href="{{ route('organizations.index') }}">{{ __('common.sidebar.organizations') }}</a>
                     </li>
                     <li><a class="slide-item"
-                            href="{{ route('page.show', ['page' => 'signup']) }}">{{ __('common.sidebar.add_product') }}</a>
+                            href="{{ route('products.index') }}">{{ __('common.sidebar.products') }}</a>
                     </li>
                 </ul>
             </li>

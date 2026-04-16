@@ -98,7 +98,7 @@
 									<div class="panel panel-default  mb-4">
 										<div class="panel-heading1 bg-primary ">
 											<h4 class="panel-title1">
-												<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion11" href="#collapseFour1" aria-expanded="false">Section 1<i class="fe fe-arrow-left ml-2"></i></a>
+												<a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion11" href="#collapseFour1" aria-expanded="false">Item 1<i class="fe fe-arrow-left ml-2"></i></a>
 											</h4>
 										</div>
 										<div id="collapseFour1" class="panel-collapse collapse" role="tabpanel" aria-expanded="false">
@@ -111,7 +111,7 @@
 									<div class="panel panel-default mb-0">
 										<div class="panel-heading1  bg-primary">
 											<h4 class="panel-title1">
-												<a class="accordion-toggle mb-0 collapsed" data-toggle="collapse" data-parent="#accordion11" href="#collapseFive2" aria-expanded="false">Section 2 <i class="fe fe-arrow-left ml-2"></i></a>
+												<a class="accordion-toggle mb-0 collapsed" data-toggle="collapse" data-parent="#accordion11" href="#collapseFive2" aria-expanded="false">Item 2 <i class="fe fe-arrow-left ml-2"></i></a>
 											</h4>
 										</div>
 										<div id="collapseFive2" class="panel-collapse collapse" role="tabpanel" aria-expanded="false">
