@@ -50,6 +50,7 @@ return [
         'home' => 'الرئيسية',
         'invoices' => 'الفواتير',
         'invoices_list' => 'قائمة الفواتير',
+        'invoice_details' => 'تفاصيل الفاتورة',
         'paid_invoices' => 'الفواتير المدفوعة',
         'partial_invoices' => 'الفواتير المدفوعة جزئياً',
         'unpaid_invoices' => 'الفواتير غير المدفوعة',

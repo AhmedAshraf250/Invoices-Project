@@ -9,6 +9,7 @@ return [
     'table' => [
         'id' => '#',
         'name' => 'Organization Name',
+        'commission_rate' => 'Default Commission',
         'description' => 'Description',
         'actions' => 'Actions',
     ],
@@ -25,6 +26,7 @@ return [
     'form' => [
         'name' => 'Organization Name',
         'description' => 'Notes',
+        'commission_rate' => 'Commission Rate (%)',
     ],
 
     'messages' => [

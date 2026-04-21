@@ -44,6 +44,7 @@ class ProductController extends Controller
                 ),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
+            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'organization_id' => ['required', 'integer', 'exists:organizations,id'],
         ]);
 
@@ -68,6 +69,7 @@ class ProductController extends Controller
                     ->ignore($product->id),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
+            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'organization_id' => ['required', 'integer', 'exists:organizations,id'],
         ]);
 

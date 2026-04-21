@@ -9,6 +9,7 @@ return [
     'table' => [
         'id' => '#',
         'name' => 'اسم المنظمة',
+        'commission_rate' => 'عمولة افتراضية',
         'description' => 'الوصف',
         'actions' => 'العمليات',
     ],
@@ -25,6 +26,7 @@ return [
     'form' => [
         'name' => 'اسم المنظمة',
         'description' => 'ملاحظات',
+        'commission_rate' => 'نسبة العمولة (%)',
     ],
 
     'messages' => [

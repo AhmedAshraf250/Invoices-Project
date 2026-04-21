@@ -24,10 +24,12 @@ class OrganizationController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:150', 'unique:organizations,name'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         Organization::query()->create([
             ...$validated,
+            'commission_rate' => $request->input('commission_rate', 0),
             'created_by' => $request->user()?->name,
         ]);
 
@@ -40,9 +42,13 @@ class OrganizationController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:150', 'unique:organizations,name,'.$organization->id],
             'description' => ['nullable', 'string', 'max:2000'],
+            'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
-        $organization->update($validated);
+        $organization->update([
+            ...$validated,
+            'commission_rate' => $request->input('commission_rate', 0),
+        ]);
 
         return to_route('organizations.index')
             ->with('success', __('organizations.messages.updated'));
@@ -64,9 +70,9 @@ class OrganizationController extends Controller
     public function getProducts(Organization $organization): JsonResponse
     {
         $products = $organization->products()
-            ->select('id', 'name')
+            ->select('id', 'name', 'commission_rate')
             ->orderBy('name')
-            ->pluck('name', 'id');
+            ->get();
 
         return response()->json($products);
     }

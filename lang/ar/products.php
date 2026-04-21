@@ -10,6 +10,7 @@ return [
         'id' => '#',
         'name' => 'اسم المنتج',
         'organization' => 'الجهة',
+        'commission_rate' => 'عمولة المنتج',
         'description' => 'الوصف',
         'actions' => 'العمليات',
     ],
@@ -27,6 +28,8 @@ return [
         'name' => 'اسم المنتج',
         'organization' => 'الجهة',
         'description' => 'ملاحظات',
+        'commission_rate' => 'نسبة عمولة المنتج (%)',
+        'inherit_from_organization' => 'يتبع عمولة المنظمة',
         'select_organization' => 'اختر الجهة',
     ],
 

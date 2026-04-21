@@ -50,6 +50,7 @@ return [
         'home' => 'Home',
         'invoices' => 'Invoices',
         'invoices_list' => 'Invoices List',
+        'invoice_details' => 'Invoice Details',
         'paid_invoices' => 'Paid Invoices',
         'partial_invoices' => 'Partially Paid Invoices',
         'unpaid_invoices' => 'Unpaid Invoices',

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 150)->unique();
             $table->text('description')->nullable();
+            $table->decimal('commission_rate', 5, 2)->default(0);
             $table->string('created_by', 150)->nullable();
             $table->timestamps();
         });

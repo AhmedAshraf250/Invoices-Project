@@ -10,6 +10,7 @@ return [
         'id' => '#',
         'name' => 'Product Name',
         'organization' => 'Organization',
+        'commission_rate' => 'Product Commission',
         'description' => 'Description',
         'actions' => 'Actions',
     ],
@@ -27,6 +28,8 @@ return [
         'name' => 'Product Name',
         'organization' => 'Organization',
         'description' => 'Notes',
+        'commission_rate' => 'Product Commission Rate (%)',
+        'inherit_from_organization' => 'Use organization default commission',
         'select_organization' => 'Select organization',
     ],
 

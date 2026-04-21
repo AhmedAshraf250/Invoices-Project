@@ -13,8 +13,16 @@ class Product extends Model
     protected $fillable = [
         'name',
         'description',
+        'commission_rate',
         'organization_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'commission_rate' => 'decimal:2',
+        ];
+    }
 
     public function organization(): BelongsTo
     {

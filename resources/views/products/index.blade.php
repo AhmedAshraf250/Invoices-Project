@@ -67,6 +67,7 @@
                                     <th class="border-bottom-0">{{ __('products.table.id') }}</th>
                                     <th class="border-bottom-0">{{ __('products.table.name') }}</th>
                                     <th class="border-bottom-0">{{ __('products.table.organization') }}</th>
+                                    <th class="border-bottom-0">{{ __('products.table.commission_rate') }}</th>
                                     <th class="border-bottom-0">{{ __('products.table.description') }}</th>
                                     <th class="border-bottom-0">{{ __('products.table.actions') }}</th>
                                 </tr>
@@ -77,6 +78,9 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $product->name }}</td>
                                         <td>{{ $product->organization?->name ?? '-' }}</td>
+                                        <td>
+                                            {{ $product->commission_rate !== null ? number_format((float) $product->commission_rate, 2) . '%' : __('products.form.inherit_from_organization') }}
+                                        </td>
                                         <td>{{ $product->description ?: '-' }}</td>
                                         <td class="text-nowrap">
                                             <div class="btn-group" role="group"
@@ -84,6 +88,7 @@
                                                 <button class="btn btn-sm btn-info" data-name="{{ $product->name }}"
                                                     data-organization-id="{{ $product->organization_id }}"
                                                     data-description="{{ $product->description }}"
+                                                    data-commission-rate="{{ $product->commission_rate }}"
                                                     data-update-url="{{ route('products.update', $product) }}"
                                                     data-toggle="modal" data-target="#editProductModal"
                                                     title="{{ __('products.actions.edit') }}">
@@ -100,7 +105,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">
+                                        <td colspan="6" class="text-center text-muted">
                                             {{ __('products.messages.empty') }}</td>
                                     </tr>
                                 @endforelse
@@ -144,6 +149,11 @@
                             <label for="create_description">{{ __('products.form.description') }}</label>
                             <textarea class="form-control" id="create_description" name="description" rows="3"></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="create_commission_rate">{{ __('products.form.commission_rate') }}</label>
+                            <input type="number" class="form-control" id="create_commission_rate" name="commission_rate"
+                                min="0" max="100" step="0.01" placeholder="{{ __('products.form.inherit_from_organization') }}">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-success">{{ __('products.actions.confirm') }}</button>
@@ -185,6 +195,11 @@
                         <div class="form-group">
                             <label for="edit_description">{{ __('products.form.description') }}</label>
                             <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_commission_rate">{{ __('products.form.commission_rate') }}</label>
+                            <input type="number" class="form-control" id="edit_commission_rate" name="commission_rate"
+                                min="0" max="100" step="0.01" placeholder="{{ __('products.form.inherit_from_organization') }}">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -250,6 +265,7 @@
             $('#edit_product_name').val(button.data('name'));
             $('#edit_organization_id').val(button.data('organization-id')).trigger('change');
             $('#edit_description').val(button.data('description'));
+            $('#edit_commission_rate').val(button.data('commission-rate'));
             $('#edit_product_form').attr('action', button.data('update-url'));
         });
 

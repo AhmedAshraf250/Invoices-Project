@@ -53,8 +53,14 @@
                     </svg><span class="side-menu__label">{{ __('common.sidebar.invoices') }}</span><i
                         class="angle fe fe-chevron-down"></i></a>
                 <ul class="slide-menu">
-                    <li><a class="slide-item"
+                    <li><a class="slide-item {{ request()->routeIs('invoices.index') ? 'active' : '' }}"
                             href="{{ route('invoices.index') }}">{{ __('common.sidebar.invoices_list') }}</a>
+                    </li>
+                    <li>
+                        <a class="slide-item {{ request()->routeIs('invoices.show') ? 'active' : '' }}" href="#">
+                            {{-- href="{{ request()->routeIs('invoices.show') ? route('invoices.show', request()->route('invoice')) : route('invoices.index') }}"> --}}
+                            {{ __('common.sidebar.invoice_details') }}
+                        </a>
                     </li>
                     <li><a class="slide-item"
                             href="{{ route('page.show', ['page' => 'chart-flot']) }}">{{ __('common.sidebar.paid_invoices') }}</a>

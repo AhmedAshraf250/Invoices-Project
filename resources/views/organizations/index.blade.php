@@ -77,6 +77,7 @@
                                 <tr>
                                     <th class="border-bottom-0">{{ __('organizations.table.id') }}</th>
                                     <th class="border-bottom-0">{{ __('organizations.table.name') }}</th>
+                                    <th class="border-bottom-0">{{ __('organizations.table.commission_rate') }}</th>
                                     <th class="border-bottom-0">{{ __('organizations.table.description') }}</th>
                                     <th class="border-bottom-0">{{ __('organizations.table.actions') }}</th>
                                 </tr>
@@ -86,13 +87,16 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $organization->name }}</td>
+                                        <td>{{ number_format($organization->commission_rate, 2) }}%</td>
                                         <td>{{ $organization->description ?: '-' }}</td>
                                         <td class="text-nowrap">
                                             <div class="btn-group" role="group"
                                                 aria-label="{{ __('organizations.table.actions') }}">
                                                 <button class="modal-effect btn btn-sm btn-info" data-effect="effect-scale"
-                                                    data-id="{{ $organization->id }}" data-name="{{ $organization->name }}"
+                                                    data-id="{{ $organization->id }}"
+                                                    data-name="{{ $organization->name }}"
                                                     data-description="{{ $organization->description }}"
+                                                    data-commission-rate="{{ $organization->commission_rate }}"
                                                     data-update-url="{{ route('organizations.update', $organization) }}"
                                                     data-toggle="modal" data-target="#editOrganizationModal"
                                                     title="{{ __('organizations.actions.edit') }}">
@@ -140,9 +144,15 @@
                             <label for="create_description">{{ __('organizations.form.description') }}</label>
                             <textarea class="form-control" id="create_description" name="description" rows="3"></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="create_commission_rate">{{ __('organizations.form.commission_rate') }}</label>
+                            <input type="number" class="form-control" id="create_commission_rate"
+                                name="commission_rate" min="0" max="100" step="0.01" value="0">
+                        </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-success">{{ __('organizations.actions.confirm') }}</button>
+                            <button type="submit"
+                                class="btn btn-success">{{ __('organizations.actions.confirm') }}</button>
                             <button type="button" class="btn btn-secondary"
                                 data-dismiss="modal">{{ __('organizations.actions.close') }}</button>
                         </div>
@@ -173,8 +183,14 @@
                             <label for="edit_description">{{ __('organizations.form.description') }}</label>
                             <textarea class="form-control" id="edit_description" name="description"></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="edit_commission_rate">{{ __('organizations.form.commission_rate') }}</label>
+                            <input type="number" class="form-control" id="edit_commission_rate" name="commission_rate"
+                                min="0" max="100" step="0.01">
+                        </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">{{ __('organizations.actions.confirm') }}</button>
+                            <button type="submit"
+                                class="btn btn-primary">{{ __('organizations.actions.confirm') }}</button>
                             <button type="button" class="btn btn-secondary"
                                 data-dismiss="modal">{{ __('organizations.actions.close') }}</button>
                         </div>
@@ -198,7 +214,8 @@
                     @csrf
                     <div class="modal-body">
                         <p>{{ __('organizations.messages.delete_confirmation') }}</p>
-                        <input class="form-control" name="name" id="delete_organization_name" type="text" readonly>
+                        <input class="form-control" name="name" id="delete_organization_name" type="text"
+                            readonly>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
@@ -237,10 +254,12 @@
             const button = $(event.relatedTarget);
             const name = button.data('name');
             const description = button.data('description');
+            const commissionRate = button.data('commission-rate');
             const updateUrl = button.data('update-url');
 
             $('#edit_name').val(name);
             $('#edit_description').val(description);
+            $('#edit_commission_rate').val(commissionRate);
             $('#edit_organization_form').attr('action', updateUrl);
         });
 

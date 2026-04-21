@@ -7,14 +7,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Organization extends Model
 {
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'description',
+        'commission_rate',
         'created_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'commission_rate' => 'decimal:2',
+        ];
+    }
 
     public function invoices(): HasMany
     {

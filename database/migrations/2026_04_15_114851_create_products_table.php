@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 150);
             $table->text('description')->nullable();
+            $table->decimal('commission_rate', 5, 2)->nullable();
             $table->foreignId('organization_id')
                 ->constrained('organizations')
                 ->cascadeOnUpdate()
