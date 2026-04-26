@@ -4,6 +4,8 @@ namespace App\Services\Invoices;
 
 use App\Models\Invoice;
 use App\Models\InvoiceAttachment;
+use App\Models\User;
+use App\Notifications\InvoiceCreatedNotification;
 use App\Repositories\Invoices\InvoiceAttachmentRepositoryInterface;
 use App\Repositories\Invoices\InvoiceRepositoryInterface;
 use App\Repositories\Invoices\InvoiceStatusHistoryRepositoryInterface;
@@ -13,13 +15,11 @@ use App\Services\Invoices\SubServices\InvoiceCalculator;
 use App\Services\Invoices\SubServices\InvoiceNumberGenerator;
 use App\Services\Invoices\SubServices\InvoiceStatusManager;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InvoiceService
 {
@@ -33,9 +33,18 @@ class InvoiceService
         private InvoiceStatusManager $invoiceStatusManager
     ) {}
 
-    public function index(int $perPage = 15)
+    public function index(int $perPage = 15, ?string $status = null, bool $onlyTrashed = false)
     {
-        return $this->invoiceRepository->paginateForIndex($perPage);
+        return $this->invoiceRepository->paginateForIndex(
+            perPage: $perPage,
+            status: $status,
+            onlyTrashed: $onlyTrashed,
+        );
+    }
+
+    public function summary(bool $onlyTrashed = false): array
+    {
+        return $this->invoiceRepository->summaryByStatus($onlyTrashed);
     }
 
     public function organizationsForCreate(): Collection
@@ -115,12 +124,25 @@ class InvoiceService
             return $invoice;
         });
 
+        if ($userId !== null) {
+            $user = User::query()->find($userId);
+
+            if ($user !== null) {
+                $user->notify(new InvoiceCreatedNotification($invoice));
+            }
+        }
+
         return $invoice;
     }
 
     public function show(Invoice $invoice): Invoice
     {
         return $this->invoiceRepository->loadForShow($invoice);
+    }
+
+    public function showWithTrashed(int $invoiceId): Invoice
+    {
+        return $this->invoiceRepository->findWithTrashedById($invoiceId);
     }
 
     public function updateStatus(Invoice $invoice, array $validated, ?int $userId): Invoice
@@ -154,19 +176,21 @@ class InvoiceService
         );
     }
 
-    public function downloadAttachment(Invoice $invoice, InvoiceAttachment $attachment): StreamedResponse|RedirectResponse
+    public function getAttachmentFileData(Invoice $invoice, InvoiceAttachment $attachment): ?array
     {
-        abort_unless($attachment->invoice_id === $invoice->id, 404);
-
-        /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk($attachment->disk);
-
-        if (! $disk->exists($attachment->file_path)) {
-            return to_route('invoices.show', $invoice)
-                ->with('error', __('invoices.messages.attachment_not_found'));
+        if ($attachment->invoice_id !== $invoice->id) {
+            throw (new ModelNotFoundException)->setModel(InvoiceAttachment::class, [$attachment->id]);
         }
 
-        return $disk->download($attachment->file_path, $attachment->original_name);
+        if (! Storage::disk($attachment->disk)->exists($attachment->file_path)) {
+            return null;
+        }
+
+        return [
+            'disk' => $attachment->disk,
+            'file_path' => $attachment->file_path,
+            'original_name' => $attachment->original_name,
+        ];
     }
 
     public function destroyAttachment(Invoice $invoice, InvoiceAttachment $attachment): void
@@ -183,5 +207,43 @@ class InvoiceService
     public function deleteInvoice(Invoice $invoice): void
     {
         $this->invoiceRepository->delete($invoice);
+    }
+
+    public function archiveInvoice(Invoice $invoice): void
+    {
+        $this->deleteInvoice($invoice);
+    }
+
+    public function restoreInvoice(int $invoiceId): void
+    {
+        $invoice = $this->invoiceRepository->findTrashedById($invoiceId);
+
+        $this->invoiceRepository->restore($invoice);
+    }
+
+    public function forceDeleteInvoice(int $invoiceId): void
+    {
+        $this->transactionManager->run(function () use ($invoiceId): void {
+            $invoice = $this->invoiceRepository->findTrashedById($invoiceId);
+
+            $this->cleanupInvoiceAttachments($invoice);
+
+            $this->invoiceRepository->forceDelete($invoice);
+        });
+    }
+
+    private function cleanupInvoiceAttachments(Invoice $invoice): void
+    {
+        $attachments = $invoice->attachments()->get();
+
+        foreach ($attachments as $attachment) {
+            $disk = Storage::disk($attachment->disk);
+
+            if ($disk->exists($attachment->file_path)) {
+                $disk->delete($attachment->file_path);
+            }
+
+            $this->invoiceAttachmentRepository->delete($attachment);
+        }
     }
 }

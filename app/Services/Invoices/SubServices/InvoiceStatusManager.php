@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Repositories\Invoices\InvoiceRepositoryInterface;
 use App\Repositories\Invoices\InvoiceStatusHistoryRepositoryInterface;
 use App\Repositories\Invoices\TransactionManagerInterface;
+use Illuminate\Validation\ValidationException;
 
 class InvoiceStatusManager
 {
@@ -23,6 +24,12 @@ class InvoiceStatusManager
         ?string $note,
         ?int $userId
     ): Invoice {
+        if ($invoice->status === Invoice::STATUS_PAID) {
+            throw ValidationException::withMessages([
+                'status' => __('invoices.validation.paid_status_locked'),
+            ]);
+        }
+
         if ($status === $invoice->status && $status !== Invoice::STATUS_PARTIAL) {
             return $invoice;
         }

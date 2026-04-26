@@ -54,6 +54,7 @@ return [
         'paid_invoices' => 'الفواتير المدفوعة',
         'partial_invoices' => 'الفواتير المدفوعة جزئياً',
         'unpaid_invoices' => 'الفواتير غير المدفوعة',
+        'archived_invoices' => 'الفواتير المؤرشفة',
         'reports' => 'التقارير',
         'invoice_reports' => 'تقارير الفواتير',
         'customer_reports' => 'تقارير العملاء',

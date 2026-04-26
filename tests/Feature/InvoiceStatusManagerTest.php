@@ -6,20 +6,21 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Services\Invoices\SubServices\InvoiceStatusManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
-test('it updates invoice status and stores history', function () {
-    $user = User::factory()->create();
+function createInvoiceForStatusTest(User $user, string $status = Invoice::STATUS_UNPAID, float $paidAmount = 0): Invoice
+{
     $organization = Organization::query()->create([
-        'name' => 'Test Org',
+        'name' => 'Test Org '.fake()->unique()->word(),
         'description' => 'Organization for status test',
         'commission_rate' => 0,
         'created_by' => 'Seeder',
     ]);
 
-    $invoice = Invoice::query()->create([
-        'invoice_number' => 'INV-2026-000001',
+    return Invoice::query()->create([
+        'invoice_number' => 'INV-2026-'.str_pad((string) fake()->unique()->numberBetween(1, 999999), 6, '0', STR_PAD_LEFT),
         'invoice_date' => now()->toDateString(),
         'product' => 'Collection Product',
         'organization_id' => $organization->id,
@@ -32,12 +33,19 @@ test('it updates invoice status and stores history', function () {
         'value_vat' => 5,
         'rate_vat' => 5,
         'total' => 105,
-        'status' => Invoice::STATUS_UNPAID,
-        'status_value' => Invoice::STATUS_VALUE_UNPAID,
+        'paid_amount' => $paidAmount,
+        'status' => $status,
+        'status_value' => Invoice::statusValueFor($status),
         'created_by_user_id' => $user->id,
     ]);
+}
 
-    $manager = new InvoiceStatusManager;
+test('it updates invoice status and stores history', function () {
+    $user = User::factory()->create();
+    $invoice = createInvoiceForStatusTest($user);
+
+    /** @var InvoiceStatusManager $manager */
+    $manager = app(InvoiceStatusManager::class);
 
     $manager->updateStatus(
         invoice: $invoice,
@@ -60,4 +68,21 @@ test('it updates invoice status and stores history', function () {
         ->and($history->from_status)->toBe(Invoice::STATUS_UNPAID)
         ->and($history->to_status)->toBe(Invoice::STATUS_PAID)
         ->and((float) $history->payment_amount)->toBe(105.0);
+});
+
+test('it prevents changing status when invoice is already paid', function () {
+    $user = User::factory()->create();
+    $invoice = createInvoiceForStatusTest($user, Invoice::STATUS_PAID, 105);
+
+    /** @var InvoiceStatusManager $manager */
+    $manager = app(InvoiceStatusManager::class);
+
+    expect(fn () => $manager->updateStatus(
+        invoice: $invoice,
+        status: Invoice::STATUS_PARTIAL,
+        paymentAmount: 10,
+        paymentDate: now()->toDateString(),
+        note: 'Attempted change',
+        userId: $user->id,
+    ))->toThrow(ValidationException::class);
 });

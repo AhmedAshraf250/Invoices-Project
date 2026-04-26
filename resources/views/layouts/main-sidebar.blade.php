@@ -24,7 +24,8 @@
                 <div class="user-info">
                     <h4 class="font-weight-semibold mt-3 mb-0">
                         {{ $authenticatedUser?->name ?? __('common.user.guest') }}</h4>
-                    <span class="mb-0 text-muted">{{ __('common.user.premium_member') }}</span>
+                    <span class="mb-0 text-muted">{{ $authenticatedUser->email ?? '' }}</span>
+                    {{-- <span class="mb-0 text-muted">{{ __('common.user.premium_member') }}</span> --}}
                 </div>
             </div>
         </div>
@@ -53,25 +54,30 @@
                     </svg><span class="side-menu__label">{{ __('common.sidebar.invoices') }}</span><i
                         class="angle fe fe-chevron-down"></i></a>
                 <ul class="slide-menu">
-                    <li><a class="slide-item {{ request()->routeIs('invoices.index') ? 'active' : '' }}"
+                    <li>
+                        <a class="slide-item {{ request()->routeIs('invoices.index') ? 'active' : '' }}"
                             href="{{ route('invoices.index') }}">{{ __('common.sidebar.invoices_list') }}</a>
                     </li>
                     <li>
-                        <a class="slide-item {{ request()->routeIs('invoices.show') ? 'active' : '' }}" href="#">
-                            {{-- href="{{ request()->routeIs('invoices.show') ? route('invoices.show', request()->route('invoice')) : route('invoices.index') }}"> --}}
-                            {{ __('common.sidebar.invoice_details') }}
-                        </a>
+                        <a class="slide-item {{ request()->routeIs('invoices.show') ? 'active' : '' }}"
+                            href="{{ request()->routeIs('invoices.show') ? url()->current() : '#' }}">{{ __('common.sidebar.invoice_details') }}</a>
                     </li>
-                    <li><a class="slide-item"
-                            href="{{ route('page.show', ['page' => 'chart-flot']) }}">{{ __('common.sidebar.paid_invoices') }}</a>
+                    <li>
+                        <a class="slide-item {{ request()->routeIs('invoices.status') && request()->route('status') === 'paid' ? 'active' : '' }}"
+                            href="{{ route('invoices.status', ['status' => 'paid']) }}">{{ __('common.sidebar.paid_invoices') }}</a>
                     </li>
-                    <li><a class="slide-item"
-                            href="{{ route('page.show', ['page' => 'chart-chartjs']) }}">{{ __('common.sidebar.partial_invoices') }}</a>
+                    <li>
+                        <a class="slide-item {{ request()->routeIs('invoices.status') && request()->route('status') === 'partial' ? 'active' : '' }}"
+                            href="{{ route('invoices.status', ['status' => 'partial']) }}">{{ __('common.sidebar.partial_invoices') }}</a>
                     </li>
-                    <li><a class="slide-item"
-                            href="{{ route('page.show', ['page' => 'chart-echart']) }}">{{ __('common.sidebar.unpaid_invoices') }}</a>
+                    <li>
+                        <a class="slide-item {{ request()->routeIs('invoices.status') && request()->route('status') === 'unpaid' ? 'active' : '' }}"
+                            href="{{ route('invoices.status', ['status' => 'unpaid']) }}">{{ __('common.sidebar.unpaid_invoices') }}</a>
                     </li>
-
+                    <li>
+                        <a class="slide-item {{ request()->routeIs('invoices.archived') ? 'active' : '' }}"
+                            href="{{ route('invoices.archived') }}">{{ __('common.sidebar.archived_invoices') }}</a>
+                    </li>
                 </ul>
             </li>
 

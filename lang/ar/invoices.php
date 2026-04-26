@@ -8,6 +8,10 @@ return [
         'card_description' => 'متابعة ومراجعة جميع الفواتير من مكان واحد.',
         'create_title' => 'إضافة فاتورة',
         'details_title' => 'تفاصيل الفاتورة',
+        'archived_title' => 'الفواتير المؤرشفة',
+        'print_title' => 'طباعة الفاتورة',
+        'collection_invoice_title' => 'فاتورة تحصيل',
+        'filtered_by_status' => 'حالة: :status',
     ],
 
     'summary' => [
@@ -15,6 +19,11 @@ return [
         'paid_invoices' => 'الفواتير المدفوعة',
         'partial_invoices' => 'الفواتير المدفوعة جزئياً',
         'unpaid_invoices' => 'الفواتير غير المدفوعة',
+        'archived_invoices' => 'الفواتير المؤرشفة',
+        'archived_total_invoices' => 'إجمالي الفواتير (مؤرشفة)',
+        'archived_paid_invoices' => 'الفواتير المدفوعة (مؤرشفة)',
+        'archived_partial_invoices' => 'الفواتير المدفوعة جزئياً (مؤرشفة)',
+        'archived_unpaid_invoices' => 'الفواتير غير المدفوعة (مؤرشفة)',
         'overall_total' => 'إجمالي المبالغ',
     ],
 
@@ -81,6 +90,8 @@ return [
         'history_remaining' => 'المتبقي',
         'upload' => 'رفع مرفق',
         'upload_button' => 'إضافة مرفق',
+        'add_attachments' => 'إضافة مرفقات',
+        'allowed_file_types' => 'الصيغ المسموحة: pdf, jpeg, jpg, png',
         'file_name' => 'اسم الملف',
         'file_size' => 'الحجم',
         'download' => 'تحميل',
@@ -96,10 +107,43 @@ return [
         'unknown' => 'غير معروفة',
     ],
 
+    'actions' => [
+        'view' => 'عرض',
+        'view_details' => 'عرض التفاصيل',
+        'print' => 'طباعة',
+        'archive' => 'أرشفة',
+        'delete' => 'حذف',
+        'restore' => 'استعادة',
+        'force_delete' => 'حذف نهائي',
+        'confirm' => 'تأكيد',
+        'cancel' => 'إلغاء',
+        'export_excel' => 'تصدير Excel',
+        'back_to_details' => 'العودة للتفاصيل',
+    ],
+
+    'confirmations' => [
+        'delete' => 'هل أنت متأكد أنك تريد حذف الفاتورة؟',
+        'archive' => 'هل تريد أرشفة هذه الفاتورة؟',
+        'restore' => 'هل تريد استعادة هذه الفاتورة؟',
+        'force_delete' => 'هل أنت متأكد من الحذف النهائي؟ لا يمكن التراجع.',
+    ],
+
+    'mail' => [
+        'created_subject' => 'تم إنشاء فاتورة جديدة #:number',
+        'greeting' => 'مرحبًا،',
+        'created_line' => 'تم إنشاء الفاتورة رقم :number بنجاح.',
+        'total_line' => 'إجمالي الفاتورة: :total',
+        'view_invoice_button' => 'عرض الفاتورة',
+        'thanks' => 'شكرًا لاستخدامك نظام الفواتير.',
+    ],
+
     'messages' => [
         'empty' => 'لا توجد فواتير حتى الآن.',
         'created' => 'تم إنشاء الفاتورة بنجاح.',
         'deleted' => 'تم حذف الفاتورة بنجاح.',
+        'archived' => 'تم أرشفة الفاتورة بنجاح.',
+        'restored' => 'تم استعادة الفاتورة بنجاح.',
+        'force_deleted' => 'تم حذف الفاتورة نهائيًا بنجاح.',
         'status_updated' => 'تم تحديث حالة الفاتورة بنجاح.',
         'initial_status_note' => 'إنشاء الفاتورة بالحالة غير مدفوعة.',
         'default_note' => 'لا توجد ملاحظات حاليا',
@@ -113,6 +157,7 @@ return [
         'payment_amount_partial' => 'عند الحالة مدفوعة جزئيًا يجب أن يكون مبلغ السداد أكبر من صفر وأقل من إجمالي الفاتورة.',
         'payment_amount_partial_exceeds_total' => 'إجمالي المدفوع بعد إضافة الدفعة الجديدة لا يمكن أن يتجاوز إجمالي الفاتورة.',
         'same_status_not_allowed' => 'الحالة المختارة هي نفسها الحالة الحالية، لذلك لم يتم التحديث.',
+        'paid_status_locked' => 'هذه الفاتورة مدفوعة بالفعل، ولا يمكن تعديل حالتها من الواجهة.',
         'product_not_in_organization' => 'المنتج المختار لا يتبع المنظمة / الجهة المحددة.',
     ],
 ];

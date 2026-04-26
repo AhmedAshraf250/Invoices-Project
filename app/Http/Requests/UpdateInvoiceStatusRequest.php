@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateInvoiceStatusRequest extends FormRequest
 {
@@ -27,39 +28,50 @@ class UpdateInvoiceStatusRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
+    /**
+     * @return array<int, \Closure(Validator): void>
+     */
+    public function after(): array
     {
-        $validator->after(function ($validator) {
-            $invoice = $this->route('invoice');
+        return [
+            function (Validator $validator): void {
+                $invoice = $this->route('invoice');
 
-            if (! $invoice instanceof Invoice) {
-                return;
-            }
+                if (! $invoice instanceof Invoice) {
+                    return;
+                }
 
-            $status = $this->string('status')->toString();
-            $paymentAmount = (float) $this->input('payment_amount', 0);
-            $total = (float) $invoice->total;
-            $currentPaidAmount = (float) $invoice->paid_amount;
+                $status = $this->string('status')->toString();
+                $paymentAmount = (float) $this->input('payment_amount', 0);
+                $total = (float) $invoice->total;
+                $currentPaidAmount = (float) $invoice->paid_amount;
 
-            if ($status === $invoice->status && $status !== Invoice::STATUS_PARTIAL) {
-                $validator->errors()->add('status', __('invoices.validation.same_status_not_allowed'));
-            }
+                if ($invoice->status === Invoice::STATUS_PAID) {
+                    $validator->errors()->add('status', __('invoices.validation.paid_status_locked'));
 
-            if ($status === Invoice::STATUS_PAID && $this->filled('payment_amount') && $paymentAmount < $total) {
-                $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_paid'));
-            }
+                    return;
+                }
 
-            if ($status === Invoice::STATUS_PARTIAL && ($paymentAmount <= 0 || $paymentAmount >= $total)) {
-                $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_partial'));
-            }
+                if ($status === $invoice->status && $status !== Invoice::STATUS_PARTIAL) {
+                    $validator->errors()->add('status', __('invoices.validation.same_status_not_allowed'));
+                }
 
-            if (
-                $status === Invoice::STATUS_PARTIAL
-                && $invoice->status === Invoice::STATUS_PARTIAL
-                && ($currentPaidAmount + $paymentAmount) > $total
-            ) {
-                $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_partial_exceeds_total'));
-            }
-        });
+                if ($status === Invoice::STATUS_PAID && $this->filled('payment_amount') && $paymentAmount < $total) {
+                    $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_paid'));
+                }
+
+                if ($status === Invoice::STATUS_PARTIAL && ($paymentAmount <= 0 || $paymentAmount >= $total)) {
+                    $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_partial'));
+                }
+
+                if (
+                    $status === Invoice::STATUS_PARTIAL
+                    && $invoice->status === Invoice::STATUS_PARTIAL
+                    && ($currentPaidAmount + $paymentAmount) > $total
+                ) {
+                    $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_partial_exceeds_total'));
+                }
+            },
+        ];
     }
 }

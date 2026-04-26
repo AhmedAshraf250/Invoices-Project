@@ -54,6 +54,7 @@ return [
         'paid_invoices' => 'Paid Invoices',
         'partial_invoices' => 'Partially Paid Invoices',
         'unpaid_invoices' => 'Unpaid Invoices',
+        'archived_invoices' => 'Archived Invoices',
         'reports' => 'Reports',
         'invoice_reports' => 'Invoice Reports',
         'customer_reports' => 'Customer Reports',

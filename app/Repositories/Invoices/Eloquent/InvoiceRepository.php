@@ -11,12 +11,43 @@ use Illuminate\Database\Eloquent\Collection;
 
 class InvoiceRepository implements InvoiceRepositoryInterface
 {
-    public function paginateForIndex(int $perPage = 15)
+    public function paginateForIndex(int $perPage = 15, ?string $status = null, bool $onlyTrashed = false)
     {
-        return Invoice::query()
+        $query = Invoice::query()
             ->with(['organization:id,name', 'productModel:id,name'])
-            ->latest('id')
-            ->paginate($perPage);
+            ->latest('id');
+
+        if ($onlyTrashed) {
+            $query->onlyTrashed();
+        }
+
+        if ($status !== null) {
+            $query->where('status', $status);
+        }
+
+        return $query->paginate($perPage);
+    }
+
+    public function summaryByStatus(bool $onlyTrashed = false): array
+    {
+        $query = Invoice::query();
+
+        if ($onlyTrashed) {
+            $query->onlyTrashed();
+        }
+
+        $statusCounts = (clone $query)
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        return [
+            'total' => (clone $query)->count(),
+            'paid' => (int) ($statusCounts[Invoice::STATUS_PAID] ?? 0),
+            'partial' => (int) ($statusCounts[Invoice::STATUS_PARTIAL] ?? 0),
+            'unpaid' => (int) ($statusCounts[Invoice::STATUS_UNPAID] ?? 0),
+            'overall_total' => (float) ((clone $query)->sum('total') ?? 0),
+        ];
     }
 
     public function getOrganizationsForCreate(): Collection
@@ -90,6 +121,30 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         return $invoice;
     }
 
+    public function findWithTrashedById(int $invoiceId): Invoice
+    {
+        /** @var Invoice $invoice */
+        $invoice = Invoice::query()->withTrashed()
+            ->with([
+                'organization:id,name',
+                'productModel:id,name,commission_rate',
+                'creator:id,name,email',
+                'attachments.uploader:id,name',
+            ])
+            ->whereKey($invoiceId)
+            ->firstOrFail();
+
+        return $invoice;
+    }
+
+    public function findTrashedById(int $invoiceId): Invoice
+    {
+        /** @var Invoice $invoice */
+        $invoice = Invoice::query()->onlyTrashed()->whereKey($invoiceId)->firstOrFail();
+
+        return $invoice;
+    }
+
     public function findLatestNumberByPrefix(string $prefix): ?string
     {
         return Invoice::query()
@@ -107,8 +162,18 @@ class InvoiceRepository implements InvoiceRepositoryInterface
             ->exists();
     }
 
-    public function delete(Invoice $invoice)
+    public function delete(Invoice $invoice): void
     {
         $invoice->delete();
+    }
+
+    public function restore(Invoice $invoice): void
+    {
+        $invoice->restore();
+    }
+
+    public function forceDelete(Invoice $invoice): void
+    {
+        $invoice->forceDelete();
     }
 }

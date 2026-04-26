@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\InvoiceExport;
 use App\Http\Requests\PreviewInvoiceCalculationRequest;
 use App\Http\Requests\StoreInvoiceAttachmentRequest;
 use App\Http\Requests\StoreInvoiceRequest;
@@ -9,9 +10,16 @@ use App\Http\Requests\UpdateInvoiceStatusRequest;
 use App\Models\Invoice;
 use App\Models\InvoiceAttachment;
 use App\Services\Invoices\InvoiceService;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InvoiceController extends Controller
 {
@@ -22,9 +30,33 @@ class InvoiceController extends Controller
      */
     public function index(): View
     {
-        $invoices = $this->invoiceService->index(15);
+        return $this->renderIndexPage();
+    }
 
-        return view('invoices.index', compact('invoices'));
+    public function status(string $status): View
+    {
+        abort_unless(in_array($status, [Invoice::STATUS_PAID, Invoice::STATUS_UNPAID, Invoice::STATUS_PARTIAL], true), 404);
+
+        return $this->renderIndexPage(status: $status);
+    }
+
+    public function archived(): View
+    {
+        return $this->renderIndexPage(onlyTrashed: true);
+    }
+
+    public function exportExcel(Request $request): BinaryFileResponse
+    {
+        $status = $request->string('status')->toString();
+        $status = in_array($status, [Invoice::STATUS_PAID, Invoice::STATUS_UNPAID, Invoice::STATUS_PARTIAL], true)
+            ? $status
+            : null;
+
+        $onlyTrashed = $request->boolean('archived');
+
+        $fileName = 'invoices_' . now()->format('Y_m_d_His') . '.xlsx';
+
+        return Excel::download(new InvoiceExport($status, $onlyTrashed), $fileName);
     }
 
     /**
@@ -70,6 +102,13 @@ class InvoiceController extends Controller
         return view('invoices.show', compact('invoice'));
     }
 
+    public function print(int $invoiceId): View
+    {
+        $invoice = $this->invoiceService->showWithTrashed($invoiceId);
+
+        return view('invoices.print', compact('invoice'));
+    }
+
     public function updateStatus(UpdateInvoiceStatusRequest $request, Invoice $invoice): RedirectResponse
     {
         $validated = $request->validated();
@@ -88,9 +127,34 @@ class InvoiceController extends Controller
             ->with('success', __('invoices.messages.attachment_uploaded'));
     }
 
-    public function downloadAttachment(Invoice $invoice, InvoiceAttachment $attachment)
+    public function downloadAttachment(Invoice $invoice, InvoiceAttachment $attachment): StreamedResponse|RedirectResponse
     {
-        return $this->invoiceService->downloadAttachment($invoice, $attachment);
+        $fileData = $this->invoiceService->getAttachmentFileData($invoice, $attachment);
+
+        if ($fileData === null) {
+            return to_route('invoices.show', $invoice)
+                ->with('error', __('invoices.messages.attachment_not_found'));
+        }
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk($fileData['disk']);
+
+        return $disk->download($fileData['file_path'], $fileData['original_name']);
+    }
+
+    public function viewAttachment(Invoice $invoice, InvoiceAttachment $attachment): StreamedResponse|RedirectResponse
+    {
+        $fileData = $this->invoiceService->getAttachmentFileData($invoice, $attachment);
+
+        if ($fileData === null) {
+            return to_route('invoices.show', $invoice)
+                ->with('error', __('invoices.messages.attachment_not_found'));
+        }
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk($fileData['disk']);
+
+        return $disk->response($fileData['file_path'], $fileData['original_name']);
     }
 
     public function destroyAttachment(Invoice $invoice, InvoiceAttachment $attachment): RedirectResponse
@@ -99,6 +163,30 @@ class InvoiceController extends Controller
 
         return to_route('invoices.show', $invoice)
             ->with('success', __('invoices.messages.attachment_deleted'));
+    }
+
+    public function archive(Invoice $invoice): RedirectResponse
+    {
+        $this->invoiceService->archiveInvoice($invoice);
+
+        return to_route('invoices.index')
+            ->with('success', __('invoices.messages.archived'));
+    }
+
+    public function restore(int $invoiceId): RedirectResponse
+    {
+        $this->invoiceService->restoreInvoice($invoiceId);
+
+        return to_route('invoices.archived')
+            ->with('success', __('invoices.messages.restored'));
+    }
+
+    public function forceDelete(int $invoiceId): RedirectResponse
+    {
+        $this->invoiceService->forceDeleteInvoice($invoiceId);
+
+        return to_route('invoices.archived')
+            ->with('success', __('invoices.messages.force_deleted'));
     }
 
     /**
@@ -110,5 +198,25 @@ class InvoiceController extends Controller
 
         return to_route('invoices.index')
             ->with('success', __('invoices.messages.deleted'));
+    }
+
+    private function renderIndexPage(?string $status = null, bool $onlyTrashed = false): View
+    {
+        $invoices = $this->invoiceService->index(15, $status, $onlyTrashed);
+        $summary = $this->invoiceService->summary($onlyTrashed);
+        $view = $onlyTrashed ? 'invoices.archived' : 'invoices.index';
+
+        $statusLabel = null;
+        if ($status !== null) {
+            $statusKey = 'invoices.status.' . $status;
+            $statusLabel = Lang::has($statusKey) ? __($statusKey) : __('invoices.status.unknown');
+        }
+
+        return view($view, [
+            'invoices' => $invoices,
+            'summary' => $summary,
+            'statusFilter' => $status,
+            'statusFilterLabel' => $statusLabel,
+        ]);
     }
 }

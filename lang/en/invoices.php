@@ -8,6 +8,10 @@ return [
         'card_description' => 'Track and review all invoices in one place.',
         'create_title' => 'Create Invoice',
         'details_title' => 'Invoice Details',
+        'archived_title' => 'Archived Invoices',
+        'print_title' => 'Invoice Print',
+        'collection_invoice_title' => 'Collection Invoice',
+        'filtered_by_status' => 'Status: :status',
     ],
 
     'summary' => [
@@ -15,6 +19,11 @@ return [
         'paid_invoices' => 'Paid Invoices',
         'partial_invoices' => 'Partially Paid Invoices',
         'unpaid_invoices' => 'Unpaid Invoices',
+        'archived_invoices' => 'Archived Invoices',
+        'archived_total_invoices' => 'Total Invoices (Archived)',
+        'archived_paid_invoices' => 'Paid Invoices (Archived)',
+        'archived_partial_invoices' => 'Partially Paid Invoices (Archived)',
+        'archived_unpaid_invoices' => 'Unpaid Invoices (Archived)',
         'overall_total' => 'Overall Total',
     ],
 
@@ -81,6 +90,8 @@ return [
         'history_remaining' => 'Remaining',
         'upload' => 'Upload Attachment',
         'upload_button' => 'Add Attachment',
+        'add_attachments' => 'Add Attachments',
+        'allowed_file_types' => 'Allowed formats: pdf, jpeg, jpg, png',
         'file_name' => 'File Name',
         'file_size' => 'Size',
         'download' => 'Download',
@@ -96,10 +107,43 @@ return [
         'unknown' => 'Unknown',
     ],
 
+    'actions' => [
+        'view' => 'View',
+        'view_details' => 'View Details',
+        'print' => 'Print',
+        'archive' => 'Archive',
+        'delete' => 'Delete',
+        'restore' => 'Restore',
+        'force_delete' => 'Force Delete',
+        'confirm' => 'Confirm',
+        'cancel' => 'Cancel',
+        'export_excel' => 'Export Excel',
+        'back_to_details' => 'Back to Details',
+    ],
+
+    'confirmations' => [
+        'delete' => 'Are you sure you want to delete this invoice?',
+        'archive' => 'Do you want to archive this invoice?',
+        'restore' => 'Do you want to restore this invoice?',
+        'force_delete' => 'Are you sure about permanent deletion? This cannot be undone.',
+    ],
+
+    'mail' => [
+        'created_subject' => 'New invoice #:number has been created',
+        'greeting' => 'Hello,',
+        'created_line' => 'Invoice :number has been created successfully.',
+        'total_line' => 'Invoice total: :total',
+        'view_invoice_button' => 'View Invoice',
+        'thanks' => 'Thank you for using the invoices system.',
+    ],
+
     'messages' => [
         'empty' => 'No invoices available yet.',
         'created' => 'Invoice created successfully.',
         'deleted' => 'Invoice deleted successfully.',
+        'archived' => 'Invoice archived successfully.',
+        'restored' => 'Invoice restored successfully.',
+        'force_deleted' => 'Invoice permanently deleted successfully.',
         'status_updated' => 'Invoice status updated successfully.',
         'initial_status_note' => 'Invoice was created with unpaid status.',
         'default_note' => 'No notes currently.',
@@ -113,6 +157,7 @@ return [
         'payment_amount_partial' => 'For partial status, payment amount must be greater than zero and less than invoice total.',
         'payment_amount_partial_exceeds_total' => 'Total paid amount after adding this installment cannot exceed invoice total.',
         'same_status_not_allowed' => 'The selected status is the same as the current status, so no update was performed.',
+        'paid_status_locked' => 'This invoice is already paid and its status cannot be changed from the UI.',
         'product_not_in_organization' => 'The selected product does not belong to the selected organization / entity.',
     ],
 ];

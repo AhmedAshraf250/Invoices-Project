@@ -178,6 +178,8 @@
                             <div class="col-md-12">
                                 {{-- Optional supporting attachment such as bank statement or collection notice --}}
                                 <label>{{ __('invoices.form.attachment') }}</label>
+                                <small
+                                    class="d-block text-danger mb-2">{{ __('invoices.details.allowed_file_types') }}</small>
                                 <input type="file" name="attachment" class="dropify"
                                     accept=".pdf,.jpg,.jpeg,.png,image/jpeg,image/png,application/pdf" data-height="80" />
                             </div>
