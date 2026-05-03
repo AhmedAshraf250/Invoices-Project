@@ -52,11 +52,19 @@
 	$(".app-sidebar a").each(function() {
 	  var pageUrl = window.location.href.split(/[?#]/)[0];
 		if (this.href == pageUrl) { 
-			$(this).addClass("active");
-			$(this).parent().addClass("active"); // add active to li of the current link
-			$(this).parent().parent().prev().addClass("active"); // add active class to an anchor
-			$(this).parent().parent().parent().parent().parent().addClass("active"); 
-			$(this).parent().parent().prev().click(); // click the item to make it drop
+			var currentLink = $(this);
+			var directParent = currentLink.parent();
+			var slideToggle = directParent.parent().prev();
+			var topSlide = directParent.closest('.slide');
+
+			currentLink.addClass("active");
+			directParent.addClass("active"); // add active to li of the current link
+			slideToggle.addClass("active"); // add active class to an anchor
+			topSlide.addClass("active");
+
+			if (topSlide.length && !topSlide.hasClass('is-expanded')) {
+				topSlide.addClass('is-expanded');
+			}
 		}
 	});
 	

@@ -33,6 +33,13 @@
 @endsection
 
 @section('page-header')
+    @php
+        $canViewInvoices = auth()->user()?->can('invoices.view') ?? false;
+        $canListInvoices = auth()->user()?->can('invoices.list') ?? false;
+        $canUpdateInvoiceStatus = auth()->user()?->can('invoices.change-status') ?? false;
+        $canCreateAttachments = auth()->user()?->can('invoice-attachments.create') ?? false;
+        $canDeleteAttachments = auth()->user()?->can('invoice-attachments.delete') ?? false;
+    @endphp
     <div class="breadcrumb-header justify-content-between">
         <div class="my-auto">
             <div class="d-flex">
@@ -41,12 +48,15 @@
             </div>
         </div>
         <div class="d-flex align-items-center" style="gap: 12px;">
-            {{-- Quick actions for returning to list and opening print version --}}
-            <a href="{{ route('invoices.index') }}" class="btn btn-outline-primary px-4 py-2 font-weight-bold">
-                {{ __('invoices.page.breadcrumb') }}
-            </a>
-            <a href="{{ route('invoices.print', $invoice->id) }}" target="_blank"
-                class="btn btn-outline-success px-4 py-2 font-weight-bold">{{ __('invoices.actions.print') }}</a>
+            @if ($canListInvoices)
+                <a href="{{ route('invoices.index') }}" class="btn btn-outline-primary px-4 py-2 font-weight-bold">
+                    {{ __('invoices.page.breadcrumb') }}
+                </a>
+            @endif
+            @if ($canViewInvoices)
+                <a href="{{ route('invoices.print', $invoice->id) }}" target="_blank"
+                    class="btn btn-outline-success px-4 py-2 font-weight-bold">{{ __('invoices.actions.print') }}</a>
+            @endif
         </div>
     </div>
 @endsection
@@ -119,6 +129,22 @@
                                                 0,
                                             );
                                             $isStatusLocked = $invoice->status === \App\Models\Invoice::STATUS_PAID;
+                                            $canMarkAsUnpaid = (float) $invoice->paid_amount === 0.0;
+                                            $historyRemainingById = [];
+                                            $historicalPaidAmount = 0.0;
+
+                                            foreach ($invoice->statusHistories->sortBy('id') as $statusHistory) {
+                                                $historicalPaidAmount = round(
+                                                    $historicalPaidAmount +
+                                                        (float) ($statusHistory->payment_amount ?? 0),
+                                                    2,
+                                                );
+
+                                                $historyRemainingById[$statusHistory->id] = max(
+                                                    (float) $invoice->total - $historicalPaidAmount,
+                                                    0,
+                                                );
+                                            }
                                         @endphp
 
                                         {{-- Quick KPI cards for current financial state of the invoice --}}
@@ -289,57 +315,63 @@
                                                     ]) }}
                                                 </p>
 
-                                                @if ($isStatusLocked)
-                                                    <div class="alert alert-warning mb-3">
-                                                        {{ __('invoices.validation.paid_status_locked') }}
+                                                @if (! $canUpdateInvoiceStatus)
+                                                    <div class="alert alert-light mb-0">
+                                                        {{ __('invoices.details.status_update_unavailable') }}
                                                     </div>
-                                                @endif
+                                                @else
+                                                    @if ($isStatusLocked)
+                                                        <div class="alert alert-warning mb-3">
+                                                            {{ __('invoices.validation.paid_status_locked') }}
+                                                        </div>
+                                                    @endif
 
-                                                <form action="{{ route('invoices.status.update', $invoice) }}"
-                                                    method="post" class="mb-0" id="status-update-form">
-                                                    @csrf
-                                                    @method('patch')
-                                                    <div class="row">
-                                                        <div class="col-lg-3 col-md-6 mb-2">
-                                                            {{-- Status selector is UI-locked once invoice becomes paid --}}
-                                                            <select name="status" class="form-control"
-                                                                id="invoice-status-select" required
-                                                                @disabled($isStatusLocked)>
-                                                                <option value="unpaid" @selected($invoice->status === 'unpaid')>
-                                                                    {{ __('invoices.status.unpaid') }}</option>
-                                                                <option value="partial" @selected($invoice->status === 'partial')>
-                                                                    {{ __('invoices.status.partial') }}</option>
-                                                                <option value="paid" @selected($invoice->status === 'paid')>
-                                                                    {{ __('invoices.status.paid') }}</option>
-                                                            </select>
+                                                    <form action="{{ route('invoices.status.update', $invoice) }}"
+                                                        method="post" class="mb-0" id="status-update-form">
+                                                        @csrf
+                                                        @method('patch')
+                                                        <div class="row">
+                                                            <div class="col-lg-3 col-md-6 mb-2">
+                                                                <select name="status" class="form-control"
+                                                                    id="invoice-status-select" required
+                                                                    @disabled($isStatusLocked)>
+                                                                    @if ($canMarkAsUnpaid)
+                                                                        <option value="unpaid" @selected($invoice->status === 'unpaid')>
+                                                                            {{ __('invoices.status.unpaid') }}</option>
+                                                                    @endif
+                                                                    <option value="partial" @selected($invoice->status === 'partial')>
+                                                                        {{ __('invoices.status.partial') }}</option>
+                                                                    <option value="paid" @selected($invoice->status === 'paid')>
+                                                                        {{ __('invoices.status.paid') }}</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-lg-3 col-md-6 mb-2" id="payment-amount-wrapper">
+                                                                <input type="number" name="payment_amount" min="0"
+                                                                    step="0.01" class="form-control"
+                                                                    placeholder="{{ __('invoices.details.payment_amount') }}"
+                                                                    @disabled($isStatusLocked)>
+                                                            </div>
+                                                            <div class="col-lg-3 col-md-6 mb-2">
+                                                                <input type="date" name="payment_date"
+                                                                    class="form-control" value="{{ now()->toDateString() }}"
+                                                                    @disabled($isStatusLocked)>
+                                                            </div>
+                                                            <div class="col-lg-3 col-md-6 mb-2">
+                                                                <button type="submit" class="btn btn-primary btn-block"
+                                                                    @disabled($isStatusLocked)>
+                                                                    {{ __('invoices.details.update_status') }}
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-lg-3 col-md-6 mb-2" id="payment-amount-wrapper">
-                                                            {{-- Payment amount appears only for partial status --}}
-                                                            <input type="number" name="payment_amount" min="0"
-                                                                step="0.01" class="form-control"
-                                                                placeholder="{{ __('invoices.details.payment_amount') }}"
-                                                                @disabled($isStatusLocked)>
+                                                        <div class="row mt-1">
+                                                            <div class="col-md-12">
+                                                                <input type="text" name="note" class="form-control"
+                                                                    placeholder="{{ __('invoices.details.status_note') }}"
+                                                                    @disabled($isStatusLocked)>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-lg-3 col-md-6 mb-2">
-                                                            <input type="date" name="payment_date"
-                                                                class="form-control" value="{{ now()->toDateString() }}"
-                                                                @disabled($isStatusLocked)>
-                                                        </div>
-                                                        <div class="col-lg-3 col-md-6 mb-2">
-                                                            <button type="submit" class="btn btn-primary btn-block"
-                                                                @disabled($isStatusLocked)>
-                                                                {{ __('invoices.details.update_status') }}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row mt-1">
-                                                        <div class="col-md-12">
-                                                            <input type="text" name="note" class="form-control"
-                                                                placeholder="{{ __('invoices.details.status_note') }}"
-                                                                @disabled($isStatusLocked)>
-                                                        </div>
-                                                    </div>
-                                                </form>
+                                                    </form>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -383,11 +415,9 @@
                                                                 )
                                                                     ? __($toStatusKey)
                                                                     : __('invoices.status.unknown');
-                                                                $remainingForHistory = max(
-                                                                    (float) $invoice->total -
-                                                                        (float) ($history->payment_amount ?? 0),
-                                                                    0,
-                                                                );
+                                                                $remainingForHistory =
+                                                                    $historyRemainingById[$history->id] ??
+                                                                    (float) $invoice->total;
                                                             @endphp
                                                             <td>{{ $fromStatusLabel }}</td>
                                                             <td>{{ $toStatusLabel }}</td>
@@ -410,27 +440,32 @@
 
                                     {{-- Attachments tab: upload new files and manage existing ones --}}
                                     <div class="tab-pane" id="invoice-attachments">
-                                        <form action="{{ route('invoices.attachments.store', $invoice) }}" method="post"
-                                            enctype="multipart/form-data" class="mb-4">
-                                            @csrf
-                                            <div class="row align-items-end">
-                                                <div class="col-md-8 mb-2">
-                                                    {{-- Section label and allowed file formats hint --}}
-                                                    <label
-                                                        class="font-weight-bold mb-1">{{ __('invoices.details.add_attachments') }}</label>
-                                                    <small class="d-block text-danger tx-12 mb-2">
-                                                        {{ __('invoices.details.allowed_file_types') }}
-                                                    </small>
-                                                    <input type="file" name="attachment"
-                                                        class="form-control-file attachment-file-input" required
-                                                        accept=".pdf,.jpeg,.jpg,.png">
+                                        @if ($canCreateAttachments)
+                                            <form action="{{ route('invoices.attachments.store', $invoice) }}" method="post"
+                                                enctype="multipart/form-data" class="mb-4">
+                                                @csrf
+                                                <div class="row align-items-end">
+                                                    <div class="col-md-8 mb-2">
+                                                        <label
+                                                            class="font-weight-bold mb-1">{{ __('invoices.details.add_attachments') }}</label>
+                                                        <small class="d-block text-danger tx-12 mb-2">
+                                                            {{ __('invoices.details.allowed_file_types') }}
+                                                        </small>
+                                                        <input type="file" name="attachment"
+                                                            class="form-control-file attachment-file-input" required
+                                                            accept=".pdf,.jpeg,.jpg,.png">
+                                                    </div>
+                                                    <div class="col-md-4 mb-2">
+                                                        <button type="submit"
+                                                            class="btn btn-success btn-block">{{ __('invoices.details.upload_button') }}</button>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-4 mb-2">
-                                                    <button type="submit"
-                                                        class="btn btn-success btn-block">{{ __('invoices.details.upload_button') }}</button>
-                                                </div>
+                                            </form>
+                                        @else
+                                            <div class="alert alert-light mb-4">
+                                                {{ __('invoices.details.attachments_upload_unavailable') }}
                                             </div>
-                                        </form>
+                                        @endif
 
                                         <div>
                                             <table class="table table-bordered text-md-nowrap mb-0">
@@ -453,20 +488,21 @@
                                                             <td>{{ $attachment->created_at?->format('Y-m-d H:i') ?? '-' }}
                                                             </td>
                                                             <td class="text-nowrap attachment-actions">
-                                                                {{-- View button opens attachment inline in new tab --}}
                                                                 <a href="{{ route('invoices.attachments.view', [$invoice, $attachment]) }}"
                                                                     target="_blank"
                                                                     class="btn btn-sm btn-secondary">{{ __('invoices.actions.view') }}</a>
                                                                 <a href="{{ route('invoices.attachments.download', [$invoice, $attachment]) }}"
                                                                     class="btn btn-sm btn-info">{{ __('invoices.details.download') }}</a>
-                                                                <form
-                                                                    action="{{ route('invoices.attachments.destroy', [$invoice, $attachment]) }}"
-                                                                    method="post" class="d-inline">
-                                                                    @csrf
-                                                                    @method('delete')
-                                                                    <button type="submit"
-                                                                        class="btn btn-sm btn-danger">{{ __('invoices.details.delete') }}</button>
-                                                                </form>
+                                                                @if ($canDeleteAttachments)
+                                                                    <form
+                                                                        action="{{ route('invoices.attachments.destroy', [$invoice, $attachment]) }}"
+                                                                        method="post" class="d-inline">
+                                                                        @csrf
+                                                                        @method('delete')
+                                                                        <button type="submit"
+                                                                            class="btn btn-sm btn-danger">{{ __('invoices.details.delete') }}</button>
+                                                                    </form>
+                                                                @endif
                                                             </td>
                                                         </tr>
                                                     @empty

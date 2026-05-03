@@ -56,6 +56,10 @@ class UpdateInvoiceStatusRequest extends FormRequest
                     $validator->errors()->add('status', __('invoices.validation.same_status_not_allowed'));
                 }
 
+                if ($status === Invoice::STATUS_UNPAID && $currentPaidAmount > 0) {
+                    $validator->errors()->add('status', __('invoices.validation.unpaid_status_not_allowed_after_payment'));
+                }
+
                 if ($status === Invoice::STATUS_PAID && $this->filled('payment_amount') && $paymentAmount < $total) {
                     $validator->errors()->add('payment_amount', __('invoices.validation.payment_amount_paid'));
                 }

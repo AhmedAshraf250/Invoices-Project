@@ -41,6 +41,7 @@ return [
         'status' => 'Status',
         'note' => 'Notes',
         'actions' => 'Actions',
+        'no_actions' => '-',
     ],
 
     'form' => [
@@ -96,6 +97,8 @@ return [
         'file_size' => 'Size',
         'download' => 'Download',
         'delete' => 'Delete',
+        'status_update_unavailable' => 'You do not have permission to update this invoice status.',
+        'attachments_upload_unavailable' => 'You do not have permission to add attachments to this invoice.',
         'no_status_history' => 'No status history yet.',
         'no_attachments' => 'No attachments yet.',
     ],
@@ -158,6 +161,7 @@ return [
         'payment_amount_partial_exceeds_total' => 'Total paid amount after adding this installment cannot exceed invoice total.',
         'same_status_not_allowed' => 'The selected status is the same as the current status, so no update was performed.',
         'paid_status_locked' => 'This invoice is already paid and its status cannot be changed from the UI.',
+        'unpaid_status_not_allowed_after_payment' => 'The invoice cannot be marked as unpaid after any payment has been recorded.',
         'product_not_in_organization' => 'The selected product does not belong to the selected organization / entity.',
     ],
 ];

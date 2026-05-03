@@ -41,6 +41,7 @@ return [
         'status' => 'الحالة',
         'note' => 'ملاحظات',
         'actions' => 'العمليات',
+        'no_actions' => '-',
     ],
 
     'form' => [
@@ -96,6 +97,8 @@ return [
         'file_size' => 'الحجم',
         'download' => 'تحميل',
         'delete' => 'حذف',
+        'status_update_unavailable' => 'لا تتوفر لديك صلاحية تعديل حالة هذه الفاتورة.',
+        'attachments_upload_unavailable' => 'لا تتوفر لديك صلاحية إضافة مرفقات لهذه الفاتورة.',
         'no_status_history' => 'لا توجد حالات مسجلة حتى الآن.',
         'no_attachments' => 'لا توجد مرفقات حتى الآن.',
     ],
@@ -158,6 +161,7 @@ return [
         'payment_amount_partial_exceeds_total' => 'إجمالي المدفوع بعد إضافة الدفعة الجديدة لا يمكن أن يتجاوز إجمالي الفاتورة.',
         'same_status_not_allowed' => 'الحالة المختارة هي نفسها الحالة الحالية، لذلك لم يتم التحديث.',
         'paid_status_locked' => 'هذه الفاتورة مدفوعة بالفعل، ولا يمكن تعديل حالتها من الواجهة.',
+        'unpaid_status_not_allowed_after_payment' => 'لا يمكن تحويل الفاتورة إلى غير مدفوعة بعد تسجيل أي مبلغ مسدد عليها.',
         'product_not_in_organization' => 'المنتج المختار لا يتبع المنظمة / الجهة المحددة.',
     ],
 ];

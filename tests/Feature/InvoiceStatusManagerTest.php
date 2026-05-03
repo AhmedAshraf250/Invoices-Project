@@ -70,6 +70,67 @@ test('it updates invoice status and stores history', function () {
         ->and((float) $history->payment_amount)->toBe(105.0);
 });
 
+test('it stores only the current payment amount in history for partial payments', function () {
+    $user = User::factory()->create();
+    $invoice = createInvoiceForStatusTest($user);
+
+    /** @var InvoiceStatusManager $manager */
+    $manager = app(InvoiceStatusManager::class);
+
+    $manager->updateStatus(
+        invoice: $invoice,
+        status: Invoice::STATUS_PARTIAL,
+        paymentAmount: 40,
+        paymentDate: now()->toDateString(),
+        note: 'First installment',
+        userId: $user->id,
+    );
+
+    $manager->updateStatus(
+        invoice: $invoice->fresh(),
+        status: Invoice::STATUS_PARTIAL,
+        paymentAmount: 20,
+        paymentDate: now()->toDateString(),
+        note: 'Second installment',
+        userId: $user->id,
+    );
+
+    $invoice->refresh();
+
+    $latestHistory = InvoiceStatusHistory::query()->where('invoice_id', $invoice->id)->latest('id')->first();
+
+    expect((float) $invoice->paid_amount)->toBe(60.0)
+        ->and($invoice->status)->toBe(Invoice::STATUS_PARTIAL)
+        ->and($latestHistory)->not->toBeNull()
+        ->and((float) $latestHistory->payment_amount)->toBe(20.0);
+});
+
+test('it stores the remaining amount in history when a partial invoice is marked as paid', function () {
+    $user = User::factory()->create();
+    $invoice = createInvoiceForStatusTest($user, Invoice::STATUS_PARTIAL, 40);
+
+    /** @var InvoiceStatusManager $manager */
+    $manager = app(InvoiceStatusManager::class);
+
+    $manager->updateStatus(
+        invoice: $invoice,
+        status: Invoice::STATUS_PAID,
+        paymentAmount: null,
+        paymentDate: now()->toDateString(),
+        note: 'Final payment received',
+        userId: $user->id,
+    );
+
+    $invoice->refresh();
+
+    $latestHistory = InvoiceStatusHistory::query()->where('invoice_id', $invoice->id)->latest('id')->first();
+
+    expect((float) $invoice->paid_amount)->toBe(105.0)
+        ->and($invoice->status)->toBe(Invoice::STATUS_PAID)
+        ->and($latestHistory)->not->toBeNull()
+        ->and((float) $latestHistory->payment_amount)->toBe(65.0);
+});
+
 test('it prevents changing status when invoice is already paid', function () {
     $user = User::factory()->create();
     $invoice = createInvoiceForStatusTest($user, Invoice::STATUS_PAID, 105);
@@ -85,4 +146,21 @@ test('it prevents changing status when invoice is already paid', function () {
         note: 'Attempted change',
         userId: $user->id,
     ))->toThrow(ValidationException::class);
+});
+
+test('it prevents reverting a partially paid invoice back to unpaid', function () {
+    $user = User::factory()->create();
+    $invoice = createInvoiceForStatusTest($user, Invoice::STATUS_PARTIAL, 40);
+
+    /** @var InvoiceStatusManager $manager */
+    $manager = app(InvoiceStatusManager::class);
+
+    expect(fn () => $manager->updateStatus(
+        invoice: $invoice,
+        status: Invoice::STATUS_UNPAID,
+        paymentAmount: null,
+        paymentDate: null,
+        note: 'Attempted revert',
+        userId: $user->id,
+    ))->toThrow(ValidationException::class, __('invoices.validation.unpaid_status_not_allowed_after_payment'));
 });

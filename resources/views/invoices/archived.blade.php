@@ -51,6 +51,11 @@
 @endsection
 
 @section('page-header')
+    @php
+        $canViewInvoices = auth()->user()?->can('invoices.view') ?? false;
+        $canExportInvoices = auth()->user()?->can('invoices.export') ?? false;
+        $canListInvoices = auth()->user()?->can('invoices.list') ?? false;
+    @endphp
     <div class="breadcrumb-header justify-content-between">
         <div class="my-auto">
             <div class="d-flex">
@@ -60,15 +65,18 @@
         </div>
 
         <div class="d-flex align-items-center" style="gap: 12px;">
-            {{-- Archived actions toolbar --}}
-            <a href="{{ route('invoices.export.excel', ['status' => $statusFilter, 'archived' => 1]) }}"
-                class="btn btn-outline-success px-4 py-2 font-weight-bold">
-                <i class="las la-file-excel mr-1"></i> {{ __('invoices.actions.export_excel') }}
-            </a>
+            @if ($canExportInvoices)
+                <a href="{{ route('invoices.export.excel', ['status' => $statusFilter, 'archived' => 1]) }}"
+                    class="btn btn-outline-success px-4 py-2 font-weight-bold">
+                    <i class="las la-file-excel mr-1"></i> {{ __('invoices.actions.export_excel') }}
+                </a>
+            @endif
 
-            <a href="{{ route('invoices.index') }}" class="btn btn-outline-primary px-4 py-2 font-weight-bold">
-                <i class="las la-list mr-1"></i> {{ __('invoices.page.breadcrumb') }}
-            </a>
+            @if ($canListInvoices)
+                <a href="{{ route('invoices.index') }}" class="btn btn-outline-primary px-4 py-2 font-weight-bold">
+                    <i class="las la-list mr-1"></i> {{ __('invoices.page.breadcrumb') }}
+                </a>
+            @endif
         </div>
     </div>
 @endsection
@@ -163,6 +171,9 @@
                         <tbody>
                             @forelse ($invoices as $invoice)
                                 @php
+                                    $canRestoreInvoice = auth()->user()?->can('invoices.restore') ?? false;
+                                    $canDeleteInvoice = auth()->user()?->can('invoices.delete') ?? false;
+                                    $hasRowActions = $canViewInvoices || $canRestoreInvoice || $canDeleteInvoice;
                                     $statusClass = match ($invoice->status_value) {
                                         1 => 'success',
                                         2 => 'danger',
@@ -176,10 +187,17 @@
                                 <tr>
                                     <td>{{ $invoice->id }}</td>
                                     <td>
-                                        <a href="{{ route('invoices.print', $invoice->id) }}" class="text-primary invoice-number-link" target="_blank">
-                                            <i class="las la-file-invoice tx-18"></i>
-                                            {{ $invoice->invoice_number }}
-                                        </a>
+                                        @if ($canViewInvoices)
+                                            <a href="{{ route('invoices.print', $invoice->id) }}" class="text-primary invoice-number-link" target="_blank">
+                                                <i class="las la-file-invoice tx-18"></i>
+                                                {{ $invoice->invoice_number }}
+                                            </a>
+                                        @else
+                                            <span class="invoice-number-link text-muted">
+                                                <i class="las la-file-invoice tx-18"></i>
+                                                {{ $invoice->invoice_number }}
+                                            </span>
+                                        @endif
                                         @if ($invoice->external_invoice_number)
                                             <div class="tx-11 text-muted mt-1">{{ $invoice->external_invoice_number }}</div>
                                         @endif
@@ -192,78 +210,91 @@
                                     <td><span class="badge badge-{{ $statusClass }}">{{ $statusLabel }}</span></td>
                                     <td class="text-muted">{{ $invoice->note ?: '-' }}</td>
                                     <td class="text-nowrap">
-                                        {{-- Dropdown operations for archived invoices --}}
-                                        <div class="dropdown d-inline-block">
-                                            <button class="btn btn-sm btn-outline-primary" type="button"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                {{ __('invoices.table.actions') }}
-                                                <i class="fas fa-caret-down ml-1"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="{{ route('invoices.print', $invoice->id) }}" target="_blank">
-                                                    <i class="las la-eye mr-1"></i>{{ __('invoices.actions.view_details') }}
-                                                </a>
-                                                <a class="dropdown-item" href="{{ route('invoices.print', $invoice->id) }}" target="_blank">
-                                                    <i class="las la-print mr-1"></i>{{ __('invoices.actions.print') }}
-                                                </a>
-                                                <button class="dropdown-item text-success" data-toggle="modal"
-                                                    data-target="#restoreInvoiceModal{{ $invoice->id }}">
-                                                    <i class="las la-undo mr-1"></i>{{ __('invoices.actions.restore') }}
+                                        @if ($hasRowActions)
+                                            <div class="dropdown d-inline-block">
+                                                <button class="btn btn-sm btn-outline-primary" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    {{ __('invoices.table.actions') }}
+                                                    <i class="fas fa-caret-down ml-1"></i>
                                                 </button>
-                                                <button class="dropdown-item text-danger" data-toggle="modal"
-                                                    data-target="#forceDeleteInvoiceModal{{ $invoice->id }}">
-                                                    <i class="las la-trash-alt mr-1"></i>{{ __('invoices.actions.force_delete') }}
-                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @if ($canViewInvoices)
+                                                        <a class="dropdown-item" href="{{ route('invoices.print', $invoice->id) }}" target="_blank">
+                                                            <i class="las la-eye mr-1"></i>{{ __('invoices.actions.view_details') }}
+                                                        </a>
+                                                        <a class="dropdown-item" href="{{ route('invoices.print', $invoice->id) }}" target="_blank">
+                                                            <i class="las la-print mr-1"></i>{{ __('invoices.actions.print') }}
+                                                        </a>
+                                                    @endif
+                                                    @if ($canRestoreInvoice)
+                                                        <button class="dropdown-item text-success" data-toggle="modal"
+                                                            data-target="#restoreInvoiceModal{{ $invoice->id }}">
+                                                            <i class="las la-undo mr-1"></i>{{ __('invoices.actions.restore') }}
+                                                        </button>
+                                                    @endif
+                                                    @if ($canDeleteInvoice)
+                                                        <button class="dropdown-item text-danger" data-toggle="modal"
+                                                            data-target="#forceDeleteInvoiceModal{{ $invoice->id }}">
+                                                            <i class="las la-trash-alt mr-1"></i>{{ __('invoices.actions.force_delete') }}
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
+                                        @else
+                                            <span class="text-muted">{{ __('invoices.table.no_actions') }}</span>
+                                        @endif
                                     </td>
                                 </tr>
 
-                                <div class="modal fade" id="restoreInvoiceModal{{ $invoice->id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">{{ __('invoices.actions.restore') }}</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">{{ __('invoices.confirmations.restore') }}</div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
-                                                <form action="{{ route('invoices.restore', $invoice->id) }}" method="post">
-                                                    @csrf
-                                                    @method('patch')
-                                                    <button type="submit" class="btn btn-success">{{ __('invoices.actions.confirm') }}</button>
-                                                </form>
+                                @if ($canRestoreInvoice)
+                                    <div class="modal fade" id="restoreInvoiceModal{{ $invoice->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ __('invoices.actions.restore') }}</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">{{ __('invoices.confirmations.restore') }}</div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
+                                                    <form action="{{ route('invoices.restore', $invoice->id) }}" method="post">
+                                                        @csrf
+                                                        @method('patch')
+                                                        <button type="submit" class="btn btn-success">{{ __('invoices.actions.confirm') }}</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
 
-                                <div class="modal fade" id="forceDeleteInvoiceModal{{ $invoice->id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">{{ __('invoices.actions.force_delete') }}</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">{{ __('invoices.confirmations.force_delete') }}</div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
-                                                <form action="{{ route('invoices.force-delete', $invoice->id) }}" method="post">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <button type="submit" class="btn btn-danger">{{ __('invoices.actions.confirm') }}</button>
-                                                </form>
+                                @if ($canDeleteInvoice)
+                                    <div class="modal fade" id="forceDeleteInvoiceModal{{ $invoice->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ __('invoices.actions.force_delete') }}</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">{{ __('invoices.confirmations.force_delete') }}</div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
+                                                    <form action="{{ route('invoices.force-delete', $invoice->id) }}" method="post">
+                                                        @csrf
+                                                        @method('delete')
+                                                        <button type="submit" class="btn btn-danger">{{ __('invoices.actions.confirm') }}</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="10" class="text-center text-muted">{{ __('invoices.messages.empty') }}</td>

@@ -1,0 +1,72 @@
+<?php
+
+return [
+    'page' => [
+        'title' => 'Users Management',
+        'subtitle' => 'Manage users, attach roles, and control account status.',
+        'details' => 'User Details',
+    ],
+    'filters' => [
+        'search' => 'Search by name or email',
+        'status' => 'Status',
+        'role' => 'Role',
+        'all_statuses' => 'All statuses',
+        'all_roles' => 'All roles',
+        'apply' => 'Apply',
+        'reset' => 'Reset',
+    ],
+    'summary' => [
+        'total' => 'Total users',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'suspended' => 'Suspended',
+    ],
+    'table' => [
+        'user' => 'User',
+        'roles' => 'Roles',
+        'status' => 'Status',
+        'created_at' => 'Created at',
+        'actions' => 'Actions',
+        'empty' => 'No users matched the current filters.',
+    ],
+    'form' => [
+        'name' => 'Name',
+        'email' => 'Email',
+        'password' => 'Password',
+        'password_hint' => 'Leave blank to keep the current password.',
+        'status' => 'Status',
+        'roles' => 'Roles',
+    ],
+    'actions' => [
+        'add' => 'Add user',
+        'edit' => 'Edit',
+        'quick_edit' => 'Quick edit',
+        'delete' => 'Delete',
+        'back' => 'Back to users',
+        'show' => 'View',
+        'save' => 'Save',
+        'cancel' => 'Cancel',
+        'confirm_delete' => 'Confirm delete',
+    ],
+    'messages' => [
+        'created' => 'User created successfully.',
+        'updated' => 'User updated successfully.',
+        'deleted' => 'User deleted successfully.',
+        'cannot_delete_self' => 'You cannot delete your current account.',
+        'last_super_admin_protected' => 'The last super-admin user cannot be removed or deleted.',
+        'protected_status_locked' => 'The status of a user with full system permissions cannot be changed.',
+        'protected_status_hint' => 'This user status is protected because they hold full system permissions.',
+        'delete_confirmation' => 'The following user will be deleted permanently:',
+    ],
+    'status' => [
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'suspended' => 'Suspended',
+    ],
+    'details' => [
+        'email' => 'Email',
+        'created_at' => 'Created at',
+        'roles' => 'Current roles',
+        'permissions' => 'Inherited permissions',
+    ],
+];

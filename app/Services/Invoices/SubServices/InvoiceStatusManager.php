@@ -30,6 +30,12 @@ class InvoiceStatusManager
             ]);
         }
 
+        if ($status === Invoice::STATUS_UNPAID && (float) $invoice->paid_amount > 0) {
+            throw ValidationException::withMessages([
+                'status' => __('invoices.validation.unpaid_status_not_allowed_after_payment'),
+            ]);
+        }
+
         if ($status === $invoice->status && $status !== Invoice::STATUS_PARTIAL) {
             return $invoice;
         }
@@ -41,10 +47,17 @@ class InvoiceStatusManager
             $toStatusValue = Invoice::statusValueFor($toStatus);
             $invoiceTotal = (float) $invoice->total;
             $currentPaidAmount = (float) $invoice->paid_amount;
+            $remainingAmount = max(round($invoiceTotal - $currentPaidAmount, 2), 0);
 
-            $normalizedPaymentAmount = match ($status) {
+            $historyPaymentAmount = match ($status) {
                 Invoice::STATUS_UNPAID => 0,
-                Invoice::STATUS_PAID => $paymentAmount ?? $invoiceTotal,
+                Invoice::STATUS_PAID => $paymentAmount ?? $remainingAmount,
+                default => $paymentAmount,
+            };
+
+            $invoicePaidAmount = match ($status) {
+                Invoice::STATUS_UNPAID => 0,
+                Invoice::STATUS_PAID => $invoiceTotal,
                 default => $paymentAmount,
             };
 
@@ -55,15 +68,16 @@ class InvoiceStatusManager
             };
 
             if ($status === Invoice::STATUS_PARTIAL && $fromStatus === Invoice::STATUS_PARTIAL) {
-
-                $updatedPaidAmount = round($currentPaidAmount + max((float) $normalizedPaymentAmount, 0), 2);
+                $historyPaymentAmount = max((float) $historyPaymentAmount, 0);
+                $updatedPaidAmount = round($currentPaidAmount + $historyPaymentAmount, 2);
 
                 if ($updatedPaidAmount >= $invoiceTotal) {
                     $toStatus = Invoice::STATUS_PAID;
                     $toStatusValue = Invoice::STATUS_VALUE_PAID;
-                    $normalizedPaymentAmount = $invoiceTotal;
+                    $invoicePaidAmount = $invoiceTotal;
+                    $historyPaymentAmount = $remainingAmount;
                 } else {
-                    $normalizedPaymentAmount = $updatedPaidAmount;
+                    $invoicePaidAmount = $updatedPaidAmount;
                 }
             }
 
@@ -71,7 +85,7 @@ class InvoiceStatusManager
                 invoice: $invoice,
                 status: $toStatus,
                 statusValue: $toStatusValue,
-                paidAmount: $normalizedPaymentAmount !== null ? (float) $normalizedPaymentAmount : null,
+                paidAmount: $invoicePaidAmount !== null ? (float) $invoicePaidAmount : null,
                 paymentDate: $normalizedPaymentDate
             );
 
@@ -81,7 +95,7 @@ class InvoiceStatusManager
                 fromStatusValue: $fromStatusValue,
                 toStatus: $toStatus,
                 toStatusValue: $toStatusValue,
-                paymentAmount: $normalizedPaymentAmount !== null ? (float) $normalizedPaymentAmount : null,
+                paymentAmount: $historyPaymentAmount !== null ? (float) $historyPaymentAmount : null,
                 paymentDate: $normalizedPaymentDate,
                 note: $note,
                 changedByUserId: $userId

@@ -6,11 +6,14 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
 
@@ -46,6 +49,23 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::viewPrefix('auth.');
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $user = User::query()
+                ->where('email', $request->string('email')->toString())
+                ->first();
+
+            if (! $user || ! Hash::check($request->string('password')->toString(), $user->password)) {
+                return null;
+            }
+
+            if ($user->status !== User::STATUS_ACTIVE) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => __('auth.inactive'),
+                ]);
+            }
+
+            return $user;
+        });
 
         // Fortify::loginView(fn () => view('auth.login'));
         // Fortify::registerView(fn () => view('auth.register'));

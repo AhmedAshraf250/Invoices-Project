@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'inactive' => 'This account is currently inactive and cannot sign in.',
 
     /*
     |--------------------------------------------------------------------------

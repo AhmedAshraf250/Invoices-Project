@@ -75,6 +75,12 @@
 @endsection
 
 @section('page-header')
+    @php
+        $canViewInvoices = auth()->user()?->can('invoices.view') ?? false;
+        $canExportInvoices = auth()->user()?->can('invoices.export') ?? false;
+        $canCreateInvoices = auth()->user()?->can('invoices.create') ?? false;
+        $canListInvoices = auth()->user()?->can('invoices.list') ?? false;
+    @endphp
     <div class="breadcrumb-header justify-content-between">
         <div class="my-auto">
             <div class="d-flex">
@@ -87,15 +93,18 @@
         </div>
 
         <div class="d-flex align-items-center" style="gap: 12px;">
-            {{-- Actions toolbar for export and invoice creation --}}
-            <a href="{{ route('invoices.export.excel', ['status' => $statusFilter, 'archived' => 0]) }}"
-                class="btn btn-outline-success px-4 py-2 font-weight-bold">
-                <i class="las la-file-excel mr-1"></i> {{ __('invoices.actions.export_excel') }}
-            </a>
+            @if ($canExportInvoices)
+                <a href="{{ route('invoices.export.excel', ['status' => $statusFilter, 'archived' => 0]) }}"
+                    class="btn btn-outline-success px-4 py-2 font-weight-bold">
+                    <i class="las la-file-excel mr-1"></i> {{ __('invoices.actions.export_excel') }}
+                </a>
+            @endif
 
-            <a href="{{ route('invoices.create') }}" class="btn btn-outline-primary px-4 py-2 font-weight-bold">
-                <i class="las la-plus mr-1"></i> {{ __('invoices.page.create_title') }}
-            </a>
+            @if ($canCreateInvoices)
+                <a href="{{ route('invoices.create') }}" class="btn btn-outline-primary px-4 py-2 font-weight-bold">
+                    <i class="las la-plus mr-1"></i> {{ __('invoices.page.create_title') }}
+                </a>
+            @endif
         </div>
     </div>
 @endsection
@@ -123,47 +132,98 @@
 
     <div class="invoice-summary-grid">
         <div class="invoice-summary-item">
-            <a class="summary-link" href="{{ route('invoices.index') }}">
-                <div class="card invoice-summary-card bg-primary-transparent {{ !$statusFilter ? 'border border-primary' : '' }}">
+            @if ($canListInvoices)
+                <a class="summary-link" href="{{ route('invoices.index') }}">
+                    <div
+                        class="card invoice-summary-card bg-primary-transparent {{ !$statusFilter ? 'border border-primary' : '' }}">
+                        <div class="card-body">
+                            <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.total_invoices') }}
+                            </div>
+                            <div class="invoice-summary-value">{{ $summary['total'] }}</div>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <div
+                    class="card invoice-summary-card bg-primary-transparent {{ !$statusFilter ? 'border border-primary' : '' }}">
                     <div class="card-body">
-                        <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.total_invoices') }}</div>
+                        <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.total_invoices') }}
+                        </div>
                         <div class="invoice-summary-value">{{ $summary['total'] }}</div>
                     </div>
                 </div>
-            </a>
+            @endif
         </div>
 
         <div class="invoice-summary-item">
-            <a class="summary-link" href="{{ route('invoices.status', ['status' => 'paid']) }}">
-                <div class="card invoice-summary-card bg-success-transparent {{ $statusFilter === 'paid' ? 'border border-success' : '' }}">
+            @if ($canViewInvoices)
+                <a class="summary-link" href="{{ route('invoices.status', ['status' => 'paid']) }}">
+                    <div
+                        class="card invoice-summary-card bg-success-transparent {{ $statusFilter === 'paid' ? 'border border-success' : '' }}">
+                        <div class="card-body">
+                            <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.paid_invoices') }}
+                            </div>
+                            <div class="invoice-summary-value">{{ $summary['paid'] }}</div>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <div
+                    class="card invoice-summary-card bg-success-transparent {{ $statusFilter === 'paid' ? 'border border-success' : '' }}">
                     <div class="card-body">
                         <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.paid_invoices') }}</div>
                         <div class="invoice-summary-value">{{ $summary['paid'] }}</div>
                     </div>
                 </div>
-            </a>
+            @endif
         </div>
 
         <div class="invoice-summary-item">
-            <a class="summary-link" href="{{ route('invoices.status', ['status' => 'partial']) }}">
-                <div class="card invoice-summary-card bg-warning-transparent {{ $statusFilter === 'partial' ? 'border border-warning' : '' }}">
+            @if ($canViewInvoices)
+                <a class="summary-link" href="{{ route('invoices.status', ['status' => 'partial']) }}">
+                    <div
+                        class="card invoice-summary-card bg-warning-transparent {{ $statusFilter === 'partial' ? 'border border-warning' : '' }}">
+                        <div class="card-body">
+                            <div class="invoice-summary-label text-muted mb-1">
+                                {{ __('invoices.summary.partial_invoices') }}</div>
+                            <div class="invoice-summary-value">{{ $summary['partial'] }}</div>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <div
+                    class="card invoice-summary-card bg-warning-transparent {{ $statusFilter === 'partial' ? 'border border-warning' : '' }}">
                     <div class="card-body">
-                        <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.partial_invoices') }}</div>
+                        <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.partial_invoices') }}
+                        </div>
                         <div class="invoice-summary-value">{{ $summary['partial'] }}</div>
                     </div>
                 </div>
-            </a>
+            @endif
         </div>
 
         <div class="invoice-summary-item">
-            <a class="summary-link" href="{{ route('invoices.status', ['status' => 'unpaid']) }}">
-                <div class="card invoice-summary-card bg-danger-transparent {{ $statusFilter === 'unpaid' ? 'border border-danger' : '' }}">
+            @if ($canViewInvoices)
+                <a class="summary-link" href="{{ route('invoices.status', ['status' => 'unpaid']) }}">
+                    <div
+                        class="card invoice-summary-card bg-danger-transparent {{ $statusFilter === 'unpaid' ? 'border border-danger' : '' }}">
+                        <div class="card-body">
+                            <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.unpaid_invoices') }}
+                            </div>
+                            <div class="invoice-summary-value">{{ $summary['unpaid'] }}</div>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <div
+                    class="card invoice-summary-card bg-danger-transparent {{ $statusFilter === 'unpaid' ? 'border border-danger' : '' }}">
                     <div class="card-body">
-                        <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.unpaid_invoices') }}</div>
+                        <div class="invoice-summary-label text-muted mb-1">{{ __('invoices.summary.unpaid_invoices') }}
+                        </div>
                         <div class="invoice-summary-value">{{ $summary['unpaid'] }}</div>
                     </div>
                 </div>
-            </a>
+            @endif
         </div>
 
     </div>
@@ -200,6 +260,10 @@
                         <tbody>
                             @forelse ($invoices as $invoice)
                                 @php
+                                    $canViewInvoice = auth()->user()?->can('invoices.view') ?? false;
+                                    $canArchiveInvoice = auth()->user()?->can('invoices.archive') ?? false;
+                                    $canDeleteInvoice = auth()->user()?->can('invoices.delete') ?? false;
+                                    $hasRowActions = $canViewInvoice || $canArchiveInvoice || $canDeleteInvoice;
                                     $statusClass = match ($invoice->status_value) {
                                         1 => 'success',
                                         2 => 'danger',
@@ -213,12 +277,21 @@
                                 <tr>
                                     <td>{{ $invoice->id }}</td>
                                     <td>
-                                        <a href="{{ route('invoices.show', $invoice->id) }}" class="text-primary invoice-number-link">
-                                            <i class="las la-file-invoice tx-18"></i>
-                                            {{ $invoice->invoice_number }}
-                                        </a>
+                                        @if ($canViewInvoice)
+                                            <a href="{{ route('invoices.show', $invoice->id) }}"
+                                                class="text-primary invoice-number-link">
+                                                <i class="las la-file-invoice tx-18"></i>
+                                                {{ $invoice->invoice_number }}
+                                            </a>
+                                        @else
+                                            <span class="invoice-number-link text-muted">
+                                                <i class="las la-file-invoice tx-18"></i>
+                                                {{ $invoice->invoice_number }}
+                                            </span>
+                                        @endif
                                         @if ($invoice->external_invoice_number)
-                                            <div class="tx-11 text-muted mt-1">{{ $invoice->external_invoice_number }}</div>
+                                            <div class="tx-11 text-muted mt-1">{{ $invoice->external_invoice_number }}
+                                            </div>
                                         @endif
                                     </td>
                                     <td>{{ $invoice->invoice_date?->format('Y-m-d') ?? '-' }}</td>
@@ -229,80 +302,110 @@
                                     <td><span class="badge badge-{{ $statusClass }}">{{ $statusLabel }}</span></td>
                                     <td class="text-muted">{{ $invoice->note ?: '-' }}</td>
                                     <td class="text-nowrap">
-                                        <div class="dropdown d-inline-block">
-                                            <button class="btn btn-sm btn-outline-primary" type="button" data-toggle="dropdown"
-                                                aria-haspopup="true" aria-expanded="false">
-                                                {{ __('invoices.table.actions') }}
-                                                <i class="fas fa-caret-down ml-1"></i>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="{{ route('invoices.show', $invoice->id) }}">
-                                                    <i class="las la-eye mr-1"></i>{{ __('invoices.actions.view_details') }}
-                                                </a>
-                                                <a class="dropdown-item" href="{{ route('invoices.print', $invoice->id) }}" target="_blank">
-                                                    <i class="las la-print mr-1"></i>{{ __('invoices.actions.print') }}
-                                                </a>
-                                                <button class="dropdown-item text-warning" data-toggle="modal"
-                                                    data-target="#archiveInvoiceModal{{ $invoice->id }}">
-                                                    <i class="las la-archive mr-1"></i>{{ __('invoices.actions.archive') }}
+                                        @if ($hasRowActions)
+                                            <div class="dropdown d-inline-block">
+                                                <button class="btn btn-sm btn-outline-primary" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    {{ __('invoices.table.actions') }}
+                                                    <i class="fas fa-caret-down ml-1"></i>
                                                 </button>
-                                                <button class="dropdown-item text-danger" data-toggle="modal"
-                                                    data-target="#deleteInvoiceModal{{ $invoice->id }}">
-                                                    <i class="las la-trash mr-1"></i>{{ __('invoices.actions.delete') }}
-                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @if ($canViewInvoice)
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('invoices.show', $invoice->id) }}">
+                                                            <i
+                                                                class="las la-eye mr-1"></i>{{ __('invoices.actions.view_details') }}
+                                                        </a>
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('invoices.print', $invoice->id) }}"
+                                                            target="_blank">
+                                                            <i
+                                                                class="las la-print mr-1"></i>{{ __('invoices.actions.print') }}
+                                                        </a>
+                                                    @endif
+                                                    @if ($canArchiveInvoice)
+                                                        <button class="dropdown-item text-warning" data-toggle="modal"
+                                                            data-target="#archiveInvoiceModal{{ $invoice->id }}">
+                                                            <i
+                                                                class="las la-archive mr-1"></i>{{ __('invoices.actions.archive') }}
+                                                        </button>
+                                                    @endif
+                                                    @if ($canDeleteInvoice)
+                                                        <button class="dropdown-item text-danger" data-toggle="modal"
+                                                            data-target="#deleteInvoiceModal{{ $invoice->id }}">
+                                                            <i
+                                                                class="las la-trash mr-1"></i>{{ __('invoices.actions.delete') }}
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
+                                        @else
+                                            <span class="text-muted">{{ __('invoices.table.no_actions') }}</span>
+                                        @endif
                                     </td>
                                 </tr>
 
-                                <div class="modal fade" id="deleteInvoiceModal{{ $invoice->id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">{{ __('invoices.actions.delete') }}</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">{{ __('invoices.confirmations.delete') }}</div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
-                                                <form action="{{ route('invoices.destroy', $invoice->id) }}" method="post">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <button type="submit" class="btn btn-danger">{{ __('invoices.actions.confirm') }}</button>
-                                                </form>
+                                @if ($canDeleteInvoice)
+                                    <div class="modal fade" id="deleteInvoiceModal{{ $invoice->id }}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ __('invoices.actions.delete') }}</h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">{{ __('invoices.confirmations.delete') }}</div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
+                                                    <form action="{{ route('invoices.destroy', $invoice->id) }}"
+                                                        method="post">
+                                                        @csrf
+                                                        @method('delete')
+                                                        <button type="submit"
+                                                            class="btn btn-danger">{{ __('invoices.actions.confirm') }}</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
 
-                                <div class="modal fade" id="archiveInvoiceModal{{ $invoice->id }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">{{ __('invoices.actions.archive') }}</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">{{ __('invoices.confirmations.archive') }}</div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
-                                                <form action="{{ route('invoices.archive', $invoice->id) }}" method="post">
-                                                    @csrf
-                                                    @method('patch')
-                                                    <button type="submit" class="btn btn-warning">{{ __('invoices.actions.confirm') }}</button>
-                                                </form>
+                                @if ($canArchiveInvoice)
+                                    <div class="modal fade" id="archiveInvoiceModal{{ $invoice->id }}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ __('invoices.actions.archive') }}</h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">{{ __('invoices.confirmations.archive') }}</div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">{{ __('invoices.actions.cancel') }}</button>
+                                                    <form action="{{ route('invoices.archive', $invoice->id) }}"
+                                                        method="post">
+                                                        @csrf
+                                                        @method('patch')
+                                                        <button type="submit"
+                                                            class="btn btn-warning">{{ __('invoices.actions.confirm') }}</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
                             @empty
                                 <tr>
-                                    <td colspan="10" class="text-center text-muted">{{ __('invoices.messages.empty') }}</td>
+                                    <td colspan="10" class="text-center text-muted">{{ __('invoices.messages.empty') }}
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
